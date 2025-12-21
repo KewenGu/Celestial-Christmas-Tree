@@ -17,7 +17,7 @@ const GIFTS_COUNT = 30;
 const FRAMES_COUNT = 15;
 const MAX_HISTORY_SIZE_RATIO = 0.5;
 const TARGETED_DISTANCE = 2.5;
-const TARGETED_SCALE_GIFT = 0.35;
+const TARGETED_SCALE_GIFT = 0.40; // Slightly larger than before (was 0.35)
 const TARGETED_SCALE_FRAME = 0.45;
 
 // Default gift messages
