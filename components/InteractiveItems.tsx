@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState, useEffect, Component, ReactNode } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
@@ -11,6 +11,56 @@ interface InteractiveItemsProps {
   userPhotos: string[];
   userGiftMessages: string[];
 }
+
+// Constants
+const GIFTS_COUNT = 30;
+const FRAMES_COUNT = 15;
+const MAX_HISTORY_SIZE_RATIO = 0.5;
+const TARGETED_DISTANCE = 2.5;
+const TARGETED_SCALE_GIFT = 0.35;
+const TARGETED_SCALE_FRAME = 0.45;
+
+// Default gift messages
+const DEFAULT_GIFT_MESSAGES = [
+  "New iPhone 16", "World Peace", "A Pair of Socks", "NVIDIA RTX 5090",
+  "A Warm Hug", "$1000 Amazon Card", "Coal :(", "Trip to Mars",
+  "React Tutorials", "Infinite Coffee"
+];
+
+// Premium Festive Gift Palette (Rich Reds, Greens, Golds, Creams)
+const GIFT_PALETTE = [
+  { base: '#800020', stripe: '#D4AF37' }, // Burgundy & Gold (Classic Luxury)
+  { base: '#004225', stripe: '#E5E4E2' }, // British Racing Green & Platinum
+  { base: '#F8F8FF', stripe: '#C41E3A' }, // Ghost White & Cardinal Red (Modern Festive)
+  { base: '#B8860B', stripe: '#191970' }, // Dark Goldenrod & Midnight Blue
+  { base: '#660000', stripe: '#FFD700' }, // Blood Red & Bright Gold
+  { base: '#FFFAF0', stripe: '#228B22' }, // Floral White & Forest Green
+  { base: '#4B0082', stripe: '#F0E68C' }, // Indigo & Khaki (Royal)
+];
+
+// Premium Festive Frame Palette
+const FRAME_PALETTE = [
+  { color: '#FFD700' }, // Classic Gold
+  { color: '#D4AF37' }, // Metallic Gold
+  { color: '#C0C0C0' }, // Silver
+  { color: '#CD7F32' }, // Bronze
+  { color: '#B76E79' }, // Rose Gold
+  { color: '#8B4513' }, // Saddle Brown (Wood-like)
+];
+
+// Curated Festive Images (Reliable URLs from Unsplash)
+const FESTIVE_IMAGES = [
+  "https://images.unsplash.com/photo-1512474932049-78ea796b6c42?auto=format&fit=crop&w=600&q=80", // Clear Snow Scene
+  "https://images.unsplash.com/photo-1576692131267-cf522760a218?auto=format&fit=crop&w=600&q=80", // Ornaments
+  "https://images.unsplash.com/photo-1543094209-4c126601b1e9?auto=format&fit=crop&w=600&q=80", // Elk in snow
+  "https://images.unsplash.com/photo-1513297887119-d46091b24bfa?auto=format&fit=crop&w=600&q=80", // Classic Balls
+  "https://images.unsplash.com/photo-1543589077-47d81606c1bf?auto=format&fit=crop&w=600&q=80", // Red Decoration
+  "https://images.unsplash.com/photo-1482638202333-c77d501dd2ec?auto=format&fit=crop&w=600&q=80", // Winter Forest
+  "https://images.unsplash.com/photo-1575373803274-a622a8459286?auto=format&fit=crop&w=600&q=80", // Bokeh Lights
+  "https://images.unsplash.com/photo-1511108690759-009324a90311?auto=format&fit=crop&w=600&q=80", // Tea/Cozy
+  "https://images.unsplash.com/photo-1544979590-2799616a614d?auto=format&fit=crop&w=600&q=80", // Indoor Tree
+  "https://images.unsplash.com/photo-1606819717115-9159c900370b?auto=format&fit=crop&w=600&q=80", // Gift Box
+];
 
 // Subset of data that doesn't change (Identity)
 interface StaticItemData {
@@ -52,6 +102,8 @@ const AsyncFrameImage: React.FC<{ url: string }> = ({ url }) => {
 
   useEffect(() => {
     let isMounted = true;
+    let loadedTexture: THREE.Texture | null = null;
+    
     setStatus('loading');
     
     const loader = new THREE.TextureLoader();
@@ -72,6 +124,7 @@ const AsyncFrameImage: React.FC<{ url: string }> = ({ url }) => {
           loadedTex.colorSpace = THREE.SRGBColorSpace;
           // Fix orientation for some uploaded images
           loadedTex.flipY = true; 
+          loadedTexture = loadedTex;
           setTexture(loadedTex);
           setStatus('success');
         } else {
@@ -87,9 +140,10 @@ const AsyncFrameImage: React.FC<{ url: string }> = ({ url }) => {
 
     return () => {
       isMounted = false;
-      // We don't dispose the texture immediately here if we want to cache it, 
-      // but for dynamic user uploads, cleaning up is safer to avoid memory leaks.
-      if (texture) texture.dispose();
+      // Clean up texture on unmount to prevent memory leaks
+      if (loadedTexture) {
+        loadedTexture.dispose();
+      }
     };
   }, [url]);
 
@@ -141,14 +195,16 @@ const Item: React.FC<{
 
     if (isTargeted) {
       // Calculate position relative to camera (HUD style)
-      // Keep it close (2.5 units) to avoid most particle occlusion
+      // Keep it close to avoid most particle occlusion
       const camera = state.camera;
       const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-      const distance = 2.5; 
-      desiredPos = camera.position.clone().add(forward.multiplyScalar(distance));
+      const up = new THREE.Vector3(0, -1, 0).applyQuaternion(camera.quaternion);
+      
+      desiredPos = camera.position.clone()
+        .add(forward.multiplyScalar(TARGETED_DISTANCE))
+        .add(up.multiplyScalar(data.type === 'gift' ? 0.3 : 0.2)); // 轻微往下移动
     } else {
       // Add "Breathing" motion when not targeted so they don't look frozen
-      // Vertical float
       desiredPos.y += Math.sin(time * 1.5 + data.phase) * 0.2;
     }
 
@@ -202,7 +258,7 @@ const Item: React.FC<{
 
   if (data.type === 'gift') {
     return (
-      <group ref={meshRef} scale={isTargeted ? 0.35 : data.scale}>
+      <group ref={meshRef} scale={isTargeted ? TARGETED_SCALE_GIFT : data.scale}>
         
         {/* Box Body */}
         <group>
@@ -312,7 +368,7 @@ const Item: React.FC<{
   );
 
   return (
-    <group ref={meshRef} scale={isTargeted ? 0.45 : data.scale}>
+    <group ref={meshRef} scale={isTargeted ? TARGETED_SCALE_FRAME : data.scale}>
       
       {/* 1. Main Frame Structure (4 Bars for realistic depth) */}
       <group>
@@ -386,55 +442,15 @@ export const InteractiveItems: React.FC<InteractiveItemsProps> = ({ appState, in
   // 1. Static Identity Data
   const staticItems = useMemo<StaticItemData[]>(() => {
     const list: StaticItemData[] = [];
-    const defaultGiftMessages = [
-      "New iPhone 16", "World Peace", "A Pair of Socks", "NVIDIA RTX 5090",
-      "A Warm Hug", "$1000 Amazon Card", "Coal :(", "Trip to Mars",
-      "React Tutorials", "Infinite Coffee"
-    ];
     
     // Determine which message list to use
     const activeMessages = (userGiftMessages && userGiftMessages.length > 0) 
       ? userGiftMessages 
-      : defaultGiftMessages;
-    
-    // Premium Festive Gift Palette (Rich Reds, Greens, Golds, Creams)
-    const giftPalette = [
-      { base: '#800020', stripe: '#D4AF37' }, // Burgundy & Gold (Classic Luxury)
-      { base: '#004225', stripe: '#E5E4E2' }, // British Racing Green & Platinum
-      { base: '#F8F8FF', stripe: '#C41E3A' }, // Ghost White & Cardinal Red (Modern Festive)
-      { base: '#B8860B', stripe: '#191970' }, // Dark Goldenrod & Midnight Blue
-      { base: '#660000', stripe: '#FFD700' }, // Blood Red & Bright Gold
-      { base: '#FFFAF0', stripe: '#228B22' }, // Floral White & Forest Green
-      { base: '#4B0082', stripe: '#F0E68C' }, // Indigo & Khaki (Royal)
-    ];
-
-    // Premium Festive Frame Palette
-    const framePalette = [
-      { color: '#FFD700' }, // Classic Gold
-      { color: '#D4AF37' }, // Metallic Gold
-      { color: '#C0C0C0' }, // Silver
-      { color: '#CD7F32' }, // Bronze
-      { color: '#B76E79' }, // Rose Gold
-      { color: '#8B4513' }, // Saddle Brown (Wood-like)
-    ];
-
-    // Curated Festive Images (Updated to highly reliable URLs)
-    const festiveImages = [
-      "https://images.unsplash.com/photo-1512474932049-78ea796b6c42?auto=format&fit=crop&w=600&q=80", // Clear Snow Scene
-      "https://images.unsplash.com/photo-1576692131267-cf522760a218?auto=format&fit=crop&w=600&q=80", // Ornaments
-      "https://images.unsplash.com/photo-1543094209-4c126601b1e9?auto=format&fit=crop&w=600&q=80", // Elk in snow
-      "https://images.unsplash.com/photo-1513297887119-d46091b24bfa?auto=format&fit=crop&w=600&q=80", // Classic Balls
-      "https://images.unsplash.com/photo-1543589077-47d81606c1bf?auto=format&fit=crop&w=600&q=80", // Red Decoration
-      "https://images.unsplash.com/photo-1482638202333-c77d501dd2ec?auto=format&fit=crop&w=600&q=80", // Winter Forest
-      "https://images.unsplash.com/photo-1575373803274-a622a8459286?auto=format&fit=crop&w=600&q=80", // Bokeh Lights
-      "https://images.unsplash.com/photo-1511108690759-009324a90311?auto=format&fit=crop&w=600&q=80", // Tea/Cozy
-      "https://images.unsplash.com/photo-1544979590-2799616a614d?auto=format&fit=crop&w=600&q=80", // Indoor Tree
-      "https://images.unsplash.com/photo-1606819717115-9159c900370b?auto=format&fit=crop&w=600&q=80", // Gift Box
-    ];
+      : DEFAULT_GIFT_MESSAGES;
 
     // 30 Gifts
-    for (let i = 0; i < 30; i++) {
-      const theme = giftPalette[i % giftPalette.length];
+    for (let i = 0; i < GIFTS_COUNT; i++) {
+      const theme = GIFT_PALETTE[i % GIFT_PALETTE.length];
       list.push({
         id: `gift-${i}`,
         type: 'gift',
@@ -448,8 +464,8 @@ export const InteractiveItems: React.FC<InteractiveItemsProps> = ({ appState, in
     }
 
     // 15 Frames
-    for (let i = 0; i < 15; i++) {
-      const theme = framePalette[i % framePalette.length];
+    for (let i = 0; i < FRAMES_COUNT; i++) {
+      const theme = FRAME_PALETTE[i % FRAME_PALETTE.length];
       
       let imgUrl;
       
@@ -457,7 +473,7 @@ export const InteractiveItems: React.FC<InteractiveItemsProps> = ({ appState, in
       if (userPhotos && userPhotos.length > 0) {
         imgUrl = userPhotos[i % userPhotos.length];
       } else {
-        imgUrl = festiveImages[i % festiveImages.length];
+        imgUrl = FESTIVE_IMAGES[i % FESTIVE_IMAGES.length];
       }
 
       list.push({
@@ -531,7 +547,7 @@ export const InteractiveItems: React.FC<InteractiveItemsProps> = ({ appState, in
       // We keep track of the last N items, where N is roughly half the total items.
       // This ensures we cycle through at least 50% of content before repeating.
       historyRef.current.push(selected.id);
-      const maxHistory = Math.max(1, Math.floor(candidates.length / 2));
+      const maxHistory = Math.max(1, Math.floor(candidates.length * MAX_HISTORY_SIZE_RATIO));
       if (historyRef.current.length > maxHistory) {
         historyRef.current.shift();
       }

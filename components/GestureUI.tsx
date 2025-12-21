@@ -13,7 +13,13 @@ interface GestureUIProps {
   userGiftMessages: string[];
 }
 
+// Constants
 const GESTURE_CONFIDENCE_THRESHOLD = 5;
+const MEDIAPIPE_WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
+const HAND_LANDMARKER_MODEL_URL = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+const PINCH_DISTANCE_THRESHOLD = 0.08;
+const THUMB_EXTENDED_DISTANCE_THRESHOLD = 0.2;
+const FINGER_EXTENSION_MULTIPLIER = 1.2;
 
 // Default gifts to populate the list if empty (Syncs with InteractiveItems)
 const DEFAULT_GIFTS = [
@@ -52,12 +58,10 @@ export const GestureUI: React.FC<GestureUIProps> = ({
   useEffect(() => {
     const initModel = async () => {
       try {
-        const filesetResolver = await FilesetResolver.forVisionTasks(
-          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
-        );
+        const filesetResolver = await FilesetResolver.forVisionTasks(MEDIAPIPE_WASM_URL);
         handLandmarkerRef.current = await HandLandmarker.createFromOptions(filesetResolver, {
           baseOptions: {
-            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+            modelAssetPath: HAND_LANDMARKER_MODEL_URL,
             delegate: "GPU"
           },
           runningMode: "VIDEO",
@@ -108,10 +112,10 @@ export const GestureUI: React.FC<GestureUIProps> = ({
       };
       
       const isExtended = (tipIdx: number, mcpIdx: number) => {
-        return dist(tipIdx, 0) > dist(mcpIdx, 0) * 1.2;
+        return dist(tipIdx, 0) > dist(mcpIdx, 0) * FINGER_EXTENSION_MULTIPLIER;
       };
 
-      const thumbExtended = dist(4, 17) > 0.2;
+      const thumbExtended = dist(4, 17) > THUMB_EXTENDED_DISTANCE_THRESHOLD;
       const indexExtended = isExtended(8, 5);
       const middleExtended = isExtended(12, 9);
       const ringExtended = isExtended(16, 13);
@@ -119,7 +123,7 @@ export const GestureUI: React.FC<GestureUIProps> = ({
       const extendedCount = [thumbExtended, indexExtended, middleExtended, ringExtended, pinkyExtended].filter(Boolean).length;
       
       const pinchDistance = dist(4, 8);
-      const isPinching = pinchDistance < 0.08;
+      const isPinching = pinchDistance < PINCH_DISTANCE_THRESHOLD;
 
       if (isPinching) detectedGesture = "PINCH";
       else if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) detectedGesture = "POINT";
@@ -167,6 +171,8 @@ export const GestureUI: React.FC<GestureUIProps> = ({
       });
       onUserPhotosUpload(newPhotos);
     }
+    // Reset input to allow re-uploading the same file if needed
+    if (e.target) e.target.value = '';
   };
 
   const triggerUpload = () => {

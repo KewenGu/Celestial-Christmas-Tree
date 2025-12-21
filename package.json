@@ -1,22 +1,36 @@
 {
   "name": "celestial-christmas-tree",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "An interactive 3D Christmas tree experience with hand gesture recognition",
+  "keywords": [
+    "three.js",
+    "react-three-fiber",
+    "christmas",
+    "3d",
+    "gestures",
+    "mediapipe",
+    "interactive"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node server.js",
+    "type-check": "tsc --noEmit",
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "0.10.14",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.4.2",
+    "@react-three/postprocessing": "^3.0.4",
+    "express": "^4.22.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "three": "^0.182.0",
-    "@react-three/postprocessing": "^3.0.4",
-    "@react-three/fiber": "^9.4.2",
-    "@react-three/drei": "^10.7.7",
     "react-webcam": "^7.2.0",
-    "@mediapipe/tasks-vision": "0.10.14"
+    "three": "^0.182.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

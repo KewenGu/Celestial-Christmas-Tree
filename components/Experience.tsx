@@ -5,6 +5,7 @@ import { Needles } from './Needles';
 import { InteractiveItems } from './InteractiveItems';
 import { Decorations } from './Decorations';
 import { AppState, InteractionMode } from '../types';
+import { NEEDLES_COUNT, AUTO_ROTATE_SPEED } from '../constants';
 
 interface ExperienceProps {
   appState: AppState;
@@ -13,17 +14,22 @@ interface ExperienceProps {
   userGiftMessages: string[];
 }
 
+/**
+ * Main 3D experience component that orchestrates the entire Christmas tree scene
+ * Includes lighting, particle systems, decorations, and post-processing effects
+ */
 export const Experience: React.FC<ExperienceProps> = ({ appState, interactionMode, userPhotos, userGiftMessages }) => {
   return (
     <>
       <color attach="background" args={['#050505']} />
       
+      {/* Camera Controls */}
       <OrbitControls 
         enablePan={false} 
         minDistance={8} 
         maxDistance={25}
         autoRotate={appState === AppState.TREE_SHAPE && interactionMode === InteractionMode.IDLE}
-        autoRotateSpeed={0.3} // Slower, majestic rotation
+        autoRotateSpeed={AUTO_ROTATE_SPEED}
       />
 
       {/* Lighting - Luxury Gold Mood */}
@@ -52,7 +58,7 @@ export const Experience: React.FC<ExperienceProps> = ({ appState, interactionMod
       <Environment preset="city" />
 
       {/* Particle Systems */}
-      <Needles count={2400} appState={appState} />
+      <Needles count={NEEDLES_COUNT} appState={appState} />
       <Decorations appState={appState} />
       <InteractiveItems 
         appState={appState} 

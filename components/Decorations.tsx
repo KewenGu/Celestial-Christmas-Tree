@@ -8,8 +8,33 @@ interface DecorationsProps {
   appState: AppState;
 }
 
+// Reuse objects to avoid GC
 const dummy = new THREE.Object3D();
 const tempPos = new THREE.Vector3();
+
+// Constants for performance
+const BAUBLES_COUNT = 150;
+const SPIRAL_LIGHTS_COUNT = 400;
+const TREE_HEIGHT = 12;
+const BASE_RADIUS = 4.5;
+const SPIRAL_HEIGHT = 13;
+const SPIRAL_BASE_RADIUS = 5.0;
+const SPIRAL_TURNS = 8;
+const SPIRAL_START_OFFSET = (1/3) / SPIRAL_TURNS;
+
+// Color palettes
+const BAUBLE_COLORS = [
+  '#D42426', // Classic Red
+  '#FFD700', // Gold
+  '#C0C0C0', // Silver
+  '#1E90FF', // Bright Blue
+  '#9B59B6', // Purple
+  '#2ECC71', // Emerald Green
+  '#E91E63', // Pink
+  '#F39C12'  // Bronze/Orange
+];
+
+const UNIFIED_LIGHT_COLOR = new THREE.Color('#FFF8E7');
 
 // --- STAR TOPPER COMPONENT ---
 const StarTopper: React.FC<{ appState: AppState }> = ({ appState }) => {
@@ -115,28 +140,16 @@ const StarTopper: React.FC<{ appState: AppState }> = ({ appState }) => {
 
 // --- BAUBLES (ORNAMENTS) COMPONENT ---
 const Baubles: React.FC<{ appState: AppState }> = ({ appState }) => {
-  const count = 150; // Decreased count to 150 as requested
   const meshRef = useRef<THREE.InstancedMesh>(null);
 
   // 1. Static Props (Color, Scale, Phase) - Computed ONCE
   const staticData = useMemo(() => {
     const data = [];
-    // Enriched palette with Purple, Emerald, Pink, Bronze
-    const colors = [
-      '#D42426', // Classic Red
-      '#FFD700', // Gold
-      '#C0C0C0', // Silver
-      '#1E90FF', // Bright Blue
-      '#9B59B6', // Purple
-      '#2ECC71', // Emerald Green
-      '#E91E63', // Pink
-      '#F39C12'  // Bronze/Orange
-    ];
-
-    for (let i = 0; i < count; i++) {
+    
+    for (let i = 0; i < BAUBLES_COUNT; i++) {
       data.push({
         scale: Math.random() * 0.1 + 0.1, // Small scale 0.1-0.2
-        color: colors[Math.floor(Math.random() * colors.length)],
+        color: BAUBLE_COLORS[Math.floor(Math.random() * BAUBLE_COLORS.length)],
         phase: Math.random() * Math.PI * 2,
       });
     }
@@ -146,20 +159,16 @@ const Baubles: React.FC<{ appState: AppState }> = ({ appState }) => {
   // 2. Targets - Computed whenever appState changes to reshuffle positions
   const targets = useMemo(() => {
     const data = [];
-    
-    // Tree Parameters
-    const h = 12;
-    const baseRadius = 4.5;
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < BAUBLES_COUNT; i++) {
       // RANDOMIZATION LOGIC:
       // Regenerate fresh positions every time state changes.
       
       const u = Math.random();
-      const y = h * (1 - Math.sqrt(u)); // Uniform vertical density
+      const y = TREE_HEIGHT * (1 - Math.sqrt(u)); // Uniform vertical density
 
       // Perfect surface radius
-      const rSurface = (1 - y / h) * baseRadius;
+      const rSurface = (1 - y / TREE_HEIGHT) * BASE_RADIUS;
 
       // Random Depth (Volumetric)
       // FIX: Constrain to 85%-100% of radius (Stay INSIDE or ON surface).
@@ -172,7 +181,7 @@ const Baubles: React.FC<{ appState: AppState }> = ({ appState }) => {
       let z = rRandom * Math.sin(theta);
       
       // FIX: Align Y-offset with Needles (-1.0) instead of -0.5.
-      let yPos = y - h / 2 - 1.0;
+      let yPos = y - TREE_HEIGHT / 2 - 1.0;
 
       // Local Jitter
       const jitter = 0.15;
@@ -214,12 +223,13 @@ const Baubles: React.FC<{ appState: AppState }> = ({ appState }) => {
   useFrame((state, delta) => {
     if (!meshRef.current) return;
     const time = state.clock.elapsedTime;
+    const isTreeMode = appState === AppState.TREE_SHAPE;
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < BAUBLES_COUNT; i++) {
       const { treePosition, scatterPosition } = targets[i];
       const { phase, scale } = staticData[i];
 
-      const target = appState === AppState.TREE_SHAPE ? treePosition : scatterPosition;
+      const target = isTreeMode ? treePosition : scatterPosition;
       
       // Read current
       meshRef.current.getMatrixAt(i, dummy.matrix);
@@ -229,7 +239,11 @@ const Baubles: React.FC<{ appState: AppState }> = ({ appState }) => {
       const floatX = Math.sin(time + phase) * 0.05;
       const floatY = Math.cos(time * 0.8 + phase) * 0.05;
 
-      tempPos.copy(target).add(new THREE.Vector3(floatX, floatY, 0));
+      tempPos.set(
+        target.x + floatX,
+        target.y + floatY,
+        target.z
+      );
       
       // Lerp
       dummy.position.lerp(tempPos, delta * 2);
@@ -242,7 +256,7 @@ const Baubles: React.FC<{ appState: AppState }> = ({ appState }) => {
   });
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+    <instancedMesh ref={meshRef} args={[undefined, undefined, BAUBLES_COUNT]}>
       <sphereGeometry args={[1, 32, 32]} />
       <meshPhysicalMaterial 
         roughness={0.15} 
@@ -256,42 +270,28 @@ const Baubles: React.FC<{ appState: AppState }> = ({ appState }) => {
 
 // --- SPIRAL LIGHTS COMPONENT ---
 const SpiralLights: React.FC<{ appState: AppState }> = ({ appState }) => {
-  const count = 400;
   const meshRef = useRef<THREE.InstancedMesh>(null);
 
   const { staticData, targets } = useMemo(() => {
     const sData = [];
     const tData = [];
-    // Unified Warm White for an elegant, classic look
-    const unifiedColor = new THREE.Color('#FFF8E7'); 
 
-    // Spiral Parameters
-    const height = 13;
-    const baseRadius = 5.0;
-    const turns = 8;
-    
-    // START ADJUSTMENT: Remove the bottom 1/3 of a turn
-    // 1 full turn corresponds to 1/8th of the normalized path (since turns=8)
-    // We want to skip 1/3 of that first turn.
-    // Normalized offset = (1/3) * (1 / turns)
-    const startOffset = (1/3) / turns;
-
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < SPIRAL_LIGHTS_COUNT; i++) {
       sData.push({
         phase: Math.random() * Math.PI * 2,
         blinkSpeed: Math.random() * 2 + 1,
-        color: unifiedColor,
+        color: UNIFIED_LIGHT_COLOR,
       });
 
       // Calculate Spiral Position
       // We map our iteration (0..count) to the range [startOffset, 1]
       // This ensures we start generating positions slightly 'up' the spiral path
-      const pct = i / count; 
-      const t = startOffset + pct * (1 - startOffset); // Interpolate from offset to 1
+      const pct = i / SPIRAL_LIGHTS_COUNT; 
+      const t = SPIRAL_START_OFFSET + pct * (1 - SPIRAL_START_OFFSET); // Interpolate from offset to 1
       
-      const y = t * height - (height / 2) - 1; // Vertical position
-      const angle = t * Math.PI * 2 * turns; // Angle
-      const r = (1 - t) * baseRadius; // Radius shrinks as we go up
+      const y = t * SPIRAL_HEIGHT - (SPIRAL_HEIGHT / 2) - 1; // Vertical position
+      const angle = t * Math.PI * 2 * SPIRAL_TURNS; // Angle
+      const r = (1 - t) * SPIRAL_BASE_RADIUS; // Radius shrinks as we go up
 
       const treePos = new THREE.Vector3(
         r * Math.cos(angle),
@@ -310,20 +310,25 @@ const SpiralLights: React.FC<{ appState: AppState }> = ({ appState }) => {
   useFrame((state, delta) => {
     if (!meshRef.current) return;
     const time = state.clock.elapsedTime;
+    const isTreeMode = appState === AppState.TREE_SHAPE;
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < SPIRAL_LIGHTS_COUNT; i++) {
       const { treePosition, scatterPosition } = targets[i];
       const { phase, blinkSpeed, color } = staticData[i];
 
-      const target = appState === AppState.TREE_SHAPE ? treePosition : scatterPosition;
+      const target = isTreeMode ? treePosition : scatterPosition;
 
       // Position logic
       meshRef.current.getMatrixAt(i, dummy.matrix);
       dummy.position.setFromMatrixPosition(dummy.matrix);
       
       // Add drift
-      const drift = appState === AppState.SCATTERED ? Math.sin(time + phase) * 0.2 : 0;
-      tempPos.copy(target).addScalar(drift);
+      const drift = isTreeMode ? 0 : Math.sin(time + phase) * 0.2;
+      tempPos.set(
+        target.x + drift,
+        target.y + drift,
+        target.z + drift
+      );
 
       dummy.position.lerp(tempPos, delta * 3);
       dummy.scale.setScalar(0.08); // Small bulbs
@@ -341,7 +346,7 @@ const SpiralLights: React.FC<{ appState: AppState }> = ({ appState }) => {
   });
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+    <instancedMesh ref={meshRef} args={[undefined, undefined, SPIRAL_LIGHTS_COUNT]}>
       <sphereGeometry args={[1, 8, 8]} />
       <meshStandardMaterial 
         emissive="white" // Base emissive, color applied via instanceColor

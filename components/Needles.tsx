@@ -9,28 +9,29 @@ interface NeedlesProps {
   appState: AppState;
 }
 
+// Reuse objects to avoid garbage collection
 const dummy = new THREE.Object3D();
 const tempPos = new THREE.Vector3();
 const targetPos = new THREE.Vector3();
+const driftOffset = new THREE.Vector3();
+
+// Palette constants moved outside component to avoid recreation
+const GREEN_PALETTE = ['#004225', '#0f5132', '#146c43', '#198754', '#2E8B57'];
+const GOLD_PALETTE = ['#FFD700', '#D4AF37', '#DAA520', '#B8860B'];
+const GOLD_CHANCE = 0.15;
 
 export const Needles: React.FC<NeedlesProps> = ({ count, appState }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
 
-  // 1. Static Attributes
-  // Added 'speed' for varied velocity (no more uniform movement)
-  // Added 'phase' for asynchronous hovering
-  // Added Gold palette for luxurious accents
+  // 1. Static Attributes - Memoized with stable dependencies
   const staticData = useMemo(() => {
     const data = [];
-    const greenPalette = ['#004225', '#0f5132', '#146c43', '#198754', '#2E8B57']; 
-    const goldPalette = ['#FFD700', '#D4AF37', '#DAA520', '#B8860B']; // Gold, Metallic Gold, Goldenrod, Dark Goldenrod
     
     for (let i = 0; i < count; i++) {
       // Increased to 15% Chance of gold leaves for better visibility
-      const isGold = Math.random() < 0.15;
-      const color = isGold 
-        ? goldPalette[Math.floor(Math.random() * goldPalette.length)]
-        : greenPalette[Math.floor(Math.random() * greenPalette.length)];
+      const isGold = Math.random() < GOLD_CHANCE;
+      const palette = isGold ? GOLD_PALETTE : GREEN_PALETTE;
+      const color = palette[Math.floor(Math.random() * palette.length)];
 
       data.push({
         rotation: new THREE.Euler(Math.random() * Math.PI, Math.random() * Math.PI, 0),
@@ -79,6 +80,11 @@ export const Needles: React.FC<NeedlesProps> = ({ count, appState }) => {
     if (!meshRef.current) return;
 
     const time = state.clock.elapsedTime;
+    const isTreeMode = appState === AppState.TREE_SHAPE;
+    
+    // Pre-calculate common values
+    const scatterDriftMult = 0.5;
+    const treeDriftMult = 0.05;
 
     for (let i = 0; i < count; i++) {
       const s = staticData[i];
@@ -89,33 +95,33 @@ export const Needles: React.FC<NeedlesProps> = ({ count, appState }) => {
       dummy.position.setFromMatrixPosition(dummy.matrix);
       
       // Determine base target
-      const baseTarget = appState === AppState.TREE_SHAPE ? t.treePosition : t.scatterPosition;
+      const baseTarget = isTreeMode ? t.treePosition : t.scatterPosition;
       targetPos.copy(baseTarget);
 
       // --- ORGANIC MOVEMENT LOGIC ---
+      // Calculate drift offset once
+      const timePhase = time + s.phase;
       
-      // 1. Add subtle drift/breathing to the TARGET itself before we lerp to it.
-      // This ensures that even when they reach the destination, they aren't frozen.
-      // We use the particle's unique 'phase' so they don't bob up and down in unison.
-      if (appState === AppState.SCATTERED) {
-        // Large, lazy floating in space
-        targetPos.x += Math.sin(time * 0.5 + s.phase) * 0.5;
-        targetPos.y += Math.cos(time * 0.3 + s.phase) * 0.5;
-        targetPos.z += Math.sin(time * 0.4 + s.phase * 0.5) * 0.5;
-      } else {
+      if (isTreeMode) {
         // Gentle shivering/twinkling on the tree
-        targetPos.x += Math.sin(time * 2 + s.phase) * 0.05;
-        targetPos.y += Math.cos(time * 1.5 + s.phase) * 0.05;
-        targetPos.z += Math.sin(time * 1 + s.phase) * 0.05;
+        driftOffset.set(
+          Math.sin(time * 2 + s.phase) * treeDriftMult,
+          Math.cos(time * 1.5 + s.phase) * treeDriftMult,
+          Math.sin(time + s.phase) * treeDriftMult
+        );
+      } else {
+        // Large, lazy floating in space
+        driftOffset.set(
+          Math.sin(time * 0.5 + s.phase) * scatterDriftMult,
+          Math.cos(time * 0.3 + s.phase) * scatterDriftMult,
+          Math.sin(time * 0.4 + s.phase * 0.5) * scatterDriftMult
+        );
       }
+      
+      targetPos.add(driftOffset);
 
       // 2. Interpolate with VARIABLE speed
-      // We check if we are forming the tree, and if so, we boost speed.
-      let moveSpeed = s.speed;
-      if (appState === AppState.TREE_SHAPE) {
-        moveSpeed *= 4.0; // Significant boost to ensure needles arrive before decorations
-      }
-
+      const moveSpeed = isTreeMode ? s.speed * 4.0 : s.speed;
       const lerpFactor = THREE.MathUtils.clamp(moveSpeed * delta, 0, 1);
       tempPos.lerpVectors(dummy.position, targetPos, lerpFactor);
       

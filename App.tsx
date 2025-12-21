@@ -1,9 +1,10 @@
-import React, { useState, Suspense, useMemo } from 'react';
+import React, { useState, Suspense, useMemo, useCallback } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Loader } from '@react-three/drei';
 import { Experience } from './components/Experience';
 import { GestureUI } from './components/GestureUI';
 import { AppState, InteractionMode } from './types';
+import { CAMERA_POSITION_DESKTOP, CAMERA_POSITION_MOBILE, CAMERA_FOV } from './constants';
 
 const App: React.FC = () => {
   // State Management
@@ -12,10 +13,22 @@ const App: React.FC = () => {
   const [userPhotos, setUserPhotos] = useState<string[]>([]);
   const [userGiftMessages, setUserGiftMessages] = useState<string[]>([]);
 
-  // Responsive Camera Position
-  // On mobile (portrait), we need to step back further to see the whole tree height.
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const cameraPosition: [number, number, number] = isMobile ? [0, 0, 28] : [0, 0, 18];
+  // Responsive Camera Position - memoized
+  const cameraPosition = useMemo(() => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    return isMobile ? CAMERA_POSITION_MOBILE : CAMERA_POSITION_DESKTOP;
+  }, []);
+
+  // Cleanup old blob URLs when new photos are uploaded
+  const handlePhotosUpload = useCallback((newPhotos: string[]) => {
+    // Revoke old blob URLs to free memory
+    userPhotos.forEach(url => {
+      if (url.startsWith('blob:')) {
+        URL.revokeObjectURL(url);
+      }
+    });
+    setUserPhotos(newPhotos);
+  }, [userPhotos]);
 
   return (
     <div className="w-full h-screen bg-black relative select-none overflow-hidden">
@@ -23,7 +36,7 @@ const App: React.FC = () => {
       {/* 3D Scene */}
       <Canvas 
         shadows 
-        camera={{ position: cameraPosition, fov: 45 }}
+        camera={{ position: cameraPosition, fov: CAMERA_FOV }}
         dpr={[1, 2]} // Support high-res displays
         gl={{ antialias: false }} // Let post-processing handle AA logic if needed, usually bloom prefers false
       >
@@ -51,7 +64,7 @@ const App: React.FC = () => {
         setAppState={setAppState}
         interactionMode={interactionMode}
         setInteractionMode={setInteractionMode}
-        onUserPhotosUpload={setUserPhotos}
+        onUserPhotosUpload={handlePhotosUpload}
         onUserGiftsUpdate={setUserGiftMessages}
         userGiftMessages={userGiftMessages}
       />

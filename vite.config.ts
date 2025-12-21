@@ -18,6 +18,19 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              'three': ['three'],
+              'react-vendor': ['react', 'react-dom'],
+              'r3f': ['@react-three/fiber', '@react-three/drei', '@react-three/postprocessing'],
+              'mediapipe': ['@mediapipe/tasks-vision', 'react-webcam'],
+            }
+          }
+        },
+        chunkSizeWarningLimit: 1000,
       }
     };
 });
