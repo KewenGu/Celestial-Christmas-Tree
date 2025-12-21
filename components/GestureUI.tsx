@@ -343,8 +343,8 @@ export const GestureUI: React.FC<GestureUIProps> = ({
         <div className="flex justify-between items-start">
           <div className="flex flex-col">
             <h1 className="font-['Playfair_Display'] text-white/90 drop-shadow-2xl leading-[0.85]">
-              <span className="block text-4xl md:text-7xl font-normal tracking-wide">Christmas</span>
-              <span className="block text-4xl md:text-7xl font-normal italic opacity-80">Tree</span>
+              <span className="block text-4xl md:text-7xl font-normal tracking-wide">Merry</span>
+              <span className="block text-4xl md:text-7xl font-normal italic opacity-80">Christmas</span>
             </h1>
             
             <div className="mt-4 md:mt-8 space-y-1.5 md:space-y-2 pointer-events-auto">
