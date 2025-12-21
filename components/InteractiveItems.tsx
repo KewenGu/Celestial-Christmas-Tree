@@ -467,7 +467,7 @@ export const InteractiveItems: React.FC<InteractiveItemsProps> = ({ appState, in
         ribbonColor: theme.ribbon,
         giftContent: activeMessages[i % activeMessages.length],
         phase: Math.random() * Math.PI * 2,
-        hasStripes: Math.random() > 0.4 // Slightly more solids for cleaner look
+        hasStripes: Math.random() > 0.5 // 50/50 balance between striped and solid
       });
     }
 
