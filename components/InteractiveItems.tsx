@@ -164,7 +164,7 @@ const AsyncFrameImage: React.FC<{ url: string }> = ({ url }) => {
   }, [url]);
 
   if (status === 'error') {
-    return <FallbackContent label="Tap PICK A PHOTO to add your photo" color="#1a472a" />;
+    return <FallbackContent label="Tap on PICK A PHOTO to add your photo" color="#1a472a" />;
   }
 
   if (status === 'loading' || !texture) {
