@@ -242,8 +242,18 @@ export const GestureUI: React.FC<GestureUIProps> = ({
 
   const applyGestureEffect = (gesture: string) => {
     switch (gesture) {
-      case "PINCH": setInteractionMode(InteractionMode.PULLING_FRAME); break;
-      case "POINT": setInteractionMode(InteractionMode.PULLING_GIFT); break;
+      case "PINCH": 
+        // Toggle: if already in PULLING_FRAME mode, reset to IDLE
+        setInteractionMode(prev => 
+          prev === InteractionMode.PULLING_FRAME ? InteractionMode.IDLE : InteractionMode.PULLING_FRAME
+        );
+        break;
+      case "POINT": 
+        // Toggle: if already in PULLING_GIFT mode, reset to IDLE
+        setInteractionMode(prev => 
+          prev === InteractionMode.PULLING_GIFT ? InteractionMode.IDLE : InteractionMode.PULLING_GIFT
+        );
+        break;
       case "FIST": 
         setInteractionMode(InteractionMode.IDLE);
         setAppState(AppState.TREE_SHAPE); 
