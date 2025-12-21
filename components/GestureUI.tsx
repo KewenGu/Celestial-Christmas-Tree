@@ -352,17 +352,37 @@ export const GestureUI: React.FC<GestureUIProps> = ({
                <InstructionRow label="FORM TREE" gesture="Closed Fist" active={appState === AppState.TREE_SHAPE} />
                
                {/* Clickable Area for Upload */}
-               <div onClick={triggerUpload} className="group cursor-pointer transition-opacity" title="Secret: Upload your own photo(s)">
+               <div 
+                 onClick={(e) => { 
+                   triggerUpload(); 
+                   (e.currentTarget as HTMLElement).blur(); // Remove focus after click
+                 }} 
+                 onTouchEnd={(e) => {
+                   (e.currentTarget as HTMLElement).blur(); // Remove focus after touch on mobile
+                 }}
+                 className="group cursor-pointer transition-opacity" 
+                 title="Secret: Upload your own photo(s)"
+               >
                  <InstructionRow label="PICK A PHOTO" gesture="Pinch Index & Thumb" active={interactionMode === InteractionMode.PULLING_FRAME} />
-                 {/* Visual Hint on Hover */}
-                 <div className="h-0 group-hover:h-0.5 w-0 group-hover:w-full bg-[#FFD700] transition-all duration-300 opacity-0 group-hover:opacity-100 mt-0.5"></div>
+                 {/* Visual Hint on Hover - Desktop only */}
+                 <div className="hidden md:block h-0 group-hover:h-0.5 w-0 group-hover:w-full bg-[#FFD700] transition-all duration-300 opacity-0 group-hover:opacity-100 mt-0.5"></div>
                </div>
 
                {/* Clickable Area for Gift Input */}
-               <div onClick={triggerGiftInput} className="group cursor-pointer transition-opacity" title="Secret: Manage your gift list">
+               <div 
+                 onClick={(e) => { 
+                   triggerGiftInput(); 
+                   (e.currentTarget as HTMLElement).blur(); // Remove focus after click
+                 }} 
+                 onTouchEnd={(e) => {
+                   (e.currentTarget as HTMLElement).blur(); // Remove focus after touch on mobile
+                 }}
+                 className="group cursor-pointer transition-opacity" 
+                 title="Secret: Manage your gift list"
+               >
                  <InstructionRow label="PICK A GIFT" gesture="Point Finger" active={interactionMode === InteractionMode.PULLING_GIFT} />
-                 {/* Visual Hint on Hover */}
-                 <div className="h-0 group-hover:h-0.5 w-0 group-hover:w-full bg-[#FFD700] transition-all duration-300 opacity-0 group-hover:opacity-100 mt-0.5"></div>
+                 {/* Visual Hint on Hover - Desktop only */}
+                 <div className="hidden md:block h-0 group-hover:h-0.5 w-0 group-hover:w-full bg-[#FFD700] transition-all duration-300 opacity-0 group-hover:opacity-100 mt-0.5"></div>
                </div>
             </div>
           </div>
