@@ -215,7 +215,7 @@ const Item: React.FC<{
       
       desiredPos = camera.position.clone()
         .add(forward.multiplyScalar(TARGETED_DISTANCE))
-        .add(up.multiplyScalar(data.type === 'gift' ? 0.3 : 0.2)); // 轻微往下移动
+        .add(up.multiplyScalar(data.type === 'gift' ? 0.3 : 0.05)); // Frame moved up (0.2 -> 0.05)
     } else {
       // Add "Breathing" motion when not targeted so they don't look frozen
       desiredPos.y += Math.sin(time * 1.5 + data.phase) * 0.2;
