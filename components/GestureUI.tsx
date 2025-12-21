@@ -320,7 +320,7 @@ export const GestureUI: React.FC<GestureUIProps> = ({
       {/* Main Gesture UI Layer */}
       <div className="absolute inset-0 pointer-events-none flex flex-col justify-between z-10" style={{
         paddingTop: 'max(1rem, env(safe-area-inset-top))',
-        paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
+        paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 20px))',
         paddingLeft: 'max(1rem, env(safe-area-inset-left))',
         paddingRight: 'max(1rem, env(safe-area-inset-right))'
       }}>
@@ -386,7 +386,7 @@ export const GestureUI: React.FC<GestureUIProps> = ({
 
         {/* Manual Controls */}
         <div className="pointer-events-auto self-center transition-opacity duration-500 opacity-100 md:opacity-0 md:hover:opacity-100" style={{
-          marginBottom: 'max(1.5rem, env(safe-area-inset-bottom))'
+          marginBottom: 'calc(2rem + env(safe-area-inset-bottom, 20px))'
         }}>
           <div className="flex gap-3 md:gap-6 bg-black/60 backdrop-blur-md px-4 py-3 md:px-6 md:py-3 rounded-full border border-white/10 text-white/90 font-['Lato'] text-[10px] md:text-xs tracking-widest uppercase shadow-lg">
              <button onClick={() => applyGestureEffect('OPEN')} className="active:scale-95 transition-transform hover:text-white">Scatter</button>
