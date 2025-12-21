@@ -45,6 +45,10 @@ export const GestureUI: React.FC<GestureUIProps> = ({
   const [showGiftModal, setShowGiftModal] = useState(false);
   // Replaced simple string with array for list editing
   const [giftList, setGiftList] = useState<string[]>([]);
+  
+  // Welcome/Tutorial Modal State
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [tutorialPage, setTutorialPage] = useState(0);
 
   const handLandmarkerRef = useRef<HandLandmarker | null>(null);
   const lastVideoTimeRef = useRef<number>(-1);
@@ -54,6 +58,66 @@ export const GestureUI: React.FC<GestureUIProps> = ({
   
   // Hidden file input for photo upload
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Check if first visit
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('celestial-tree-visited');
+    if (!hasVisited) {
+      setShowWelcome(true);
+    }
+  }, []);
+
+  const closeWelcome = () => {
+    localStorage.setItem('celestial-tree-visited', 'true');
+    setShowWelcome(false);
+    setTutorialPage(0);
+  };
+
+  const nextPage = () => {
+    if (tutorialPage < 4) {
+      setTutorialPage(tutorialPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (tutorialPage > 0) {
+      setTutorialPage(tutorialPage - 1);
+    }
+  };
+
+  // Tutorial pages data
+  const tutorialPages = [
+    {
+      emoji: "🎄",
+      title: "Welcome",
+      subtitle: "Interactive Christmas Experience",
+      description: "Control the tree with hand gestures or tap the buttons. Let's learn how!"
+    },
+    {
+      emoji: "✋",
+      title: "Open Hand",
+      subtitle: "Scatter Mode",
+      description: "Spread your fingers wide to scatter all ornaments and gifts around the tree."
+    },
+    {
+      emoji: "✊",
+      title: "Closed Fist",
+      subtitle: "Form Tree",
+      description: "Make a fist to arrange everything into a beautiful Christmas tree shape."
+    },
+    {
+      emoji: "🤏",
+      title: "Pinch Gesture",
+      subtitle: "Pick a Photo",
+      description: "Pinch your index finger and thumb together to view photos. Tap to upload your own!"
+    },
+    {
+      emoji: "☝️",
+      title: "Point Finger",
+      subtitle: "Pick a Gift",
+      description: "Point with your index finger to select gifts and add your own Christmas wishes."
+    }
+  ];
 
   useEffect(() => {
     const initModel = async () => {
@@ -220,6 +284,122 @@ export const GestureUI: React.FC<GestureUIProps> = ({
 
   return (
     <>
+      {/* Welcome/Tutorial Modal - Swipeable Pages */}
+      {showWelcome && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-auto">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            onClick={tutorialPage === tutorialPages.length - 1 ? closeWelcome : undefined}
+          ></div>
+          
+          {/* Modal Content */}
+          <div className="relative z-10 w-[90%] max-w-md bg-black/60 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+            {/* Pages Container with Slide Animation */}
+            <div className="relative overflow-hidden">
+              <div 
+                className="flex transition-transform duration-500 ease-out"
+                style={{ transform: `translateX(-${tutorialPage * 100}%)` }}
+              >
+                {tutorialPages.map((page, index) => (
+                  <div 
+                    key={index}
+                    className="w-full flex-shrink-0 px-8 py-12 text-center"
+                  >
+                    {/* Emoji */}
+                    <div className="text-8xl mb-6 animate-bounce-slow">
+                      {page.emoji}
+                    </div>
+
+                    {/* Title */}
+                    <h2 className="font-['Playfair_Display'] text-3xl text-white/90 mb-2">
+                      {page.title}
+                    </h2>
+
+                    {/* Subtitle */}
+                    <p className="font-['Lato'] text-white/50 text-sm uppercase tracking-wider mb-6">
+                      {page.subtitle}
+                    </p>
+
+                    {/* Description */}
+                    <p className="font-['Lato'] text-white/70 text-base leading-relaxed max-w-xs mx-auto">
+                      {page.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Page Indicators (Dots) */}
+            <div className="flex justify-center gap-2 pb-6">
+              {tutorialPages.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setTutorialPage(index)}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    index === tutorialPage 
+                      ? 'w-8 bg-white/80' 
+                      : 'w-2 bg-white/20 hover:bg-white/40'
+                  }`}
+                  aria-label={`Go to page ${index + 1}`}
+                />
+              ))}
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="px-8 pb-8 flex gap-3">
+              {/* Previous Button */}
+              {tutorialPage > 0 && (
+                <button 
+                  onClick={prevPage}
+                  className="flex-1 py-3 rounded-xl font-['Lato'] text-sm text-white/60 hover:text-white border border-white/10 hover:border-white/20 hover:bg-white/5 transition-all duration-200"
+                >
+                  ← Back
+                </button>
+              )}
+
+              {/* Next/Start Button */}
+              {tutorialPage < tutorialPages.length - 1 ? (
+                <button 
+                  onClick={nextPage}
+                  className="flex-1 py-3 rounded-xl font-['Lato'] text-sm text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all duration-200"
+                >
+                  Next →
+                </button>
+              ) : (
+                <button 
+                  onClick={closeWelcome}
+                  className="flex-1 py-3 rounded-xl font-['Lato'] text-sm text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all duration-200"
+                >
+                  Let's Begin! 🎅
+                </button>
+              )}
+
+              {/* Skip Button (always visible) */}
+              {tutorialPage < tutorialPages.length - 1 && (
+                <button 
+                  onClick={closeWelcome}
+                  className="px-4 py-3 rounded-xl font-['Lato'] text-sm text-white/40 hover:text-white/60 transition-all duration-200"
+                >
+                  Skip
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Add CSS for bounce animation */}
+          <style>{`
+            @keyframes bounce-slow {
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(-10px); }
+            }
+            .animate-bounce-slow {
+              animation: bounce-slow 2s ease-in-out infinite;
+            }
+          `}</style>
+        </div>
+      )}
+
       {/* 
         Custom Modal Overlay: Gift List Editor
       */}
