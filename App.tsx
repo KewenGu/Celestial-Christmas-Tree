@@ -1,4 +1,4 @@
-import React, { useState, Suspense, useMemo, useCallback } from 'react';
+import React, { useState, Suspense, useMemo, useCallback, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Loader } from '@react-three/drei';
 import { Experience } from './components/Experience';
@@ -12,6 +12,9 @@ const App: React.FC = () => {
   const [interactionMode, setInteractionMode] = useState<InteractionMode>(InteractionMode.IDLE);
   const [userPhotos, setUserPhotos] = useState<string[]>([]);
   const [userGiftMessages, setUserGiftMessages] = useState<string[]>([]);
+
+  // Canvas container ref for screenshot
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
 
   // Responsive Camera Position - memoized
   const cameraPosition = useMemo(() => {
@@ -30,8 +33,35 @@ const App: React.FC = () => {
     setUserPhotos(newPhotos);
   }, [userPhotos]);
 
+  // Screenshot function
+  const takeScreenshot = useCallback(() => {
+    if (!canvasContainerRef.current) return;
+    
+    const canvas = canvasContainerRef.current.querySelector('canvas');
+    if (!canvas) return;
+
+    try {
+      // Convert canvas to blob
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `christmas-tree-${Date.now()}.png`;
+        link.click();
+        
+        // Cleanup
+        URL.revokeObjectURL(url);
+      }, 'image/png', 1.0);
+    } catch (error) {
+      console.error('Screenshot failed:', error);
+    }
+  }, []);
+
   return (
-    <div className="w-full h-screen bg-black relative select-none overflow-hidden">
+    <div ref={canvasContainerRef} className="w-full h-screen bg-black relative select-none overflow-hidden">
       
       {/* 3D Scene */}
       <Canvas 
@@ -71,6 +101,7 @@ const App: React.FC = () => {
         onUserPhotosUpload={handlePhotosUpload}
         onUserGiftsUpdate={setUserGiftMessages}
         userGiftMessages={userGiftMessages}
+        onScreenshot={takeScreenshot}
       />
 
     </div>

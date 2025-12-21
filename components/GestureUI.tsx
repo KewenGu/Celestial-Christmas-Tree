@@ -11,6 +11,7 @@ interface GestureUIProps {
   onUserPhotosUpload: (urls: string[]) => void;
   onUserGiftsUpdate: (msgs: string[]) => void;
   userGiftMessages: string[];
+  onScreenshot?: () => void;
 }
 
 // Constants
@@ -35,7 +36,8 @@ export const GestureUI: React.FC<GestureUIProps> = ({
   setInteractionMode,
   onUserPhotosUpload,
   onUserGiftsUpdate,
-  userGiftMessages
+  userGiftMessages,
+  onScreenshot
 }) => {
   const webcamRef = useRef<Webcam>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
@@ -49,6 +51,8 @@ export const GestureUI: React.FC<GestureUIProps> = ({
   // Welcome/Tutorial Modal State
   const [showWelcome, setShowWelcome] = useState(false);
   const [tutorialPage, setTutorialPage] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   const handLandmarkerRef = useRef<HandLandmarker | null>(null);
   const lastVideoTimeRef = useRef<number>(-1);
@@ -82,6 +86,33 @@ export const GestureUI: React.FC<GestureUIProps> = ({
   const prevPage = () => {
     if (tutorialPage > 0) {
       setTutorialPage(tutorialPage - 1);
+    }
+  };
+
+  // Touch swipe handlers
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+      nextPage();
+    }
+    if (isRightSwipe) {
+      prevPage();
     }
   };
 
@@ -294,7 +325,12 @@ export const GestureUI: React.FC<GestureUIProps> = ({
           ></div>
           
           {/* Modal Content */}
-          <div className="relative z-10 w-[90%] max-w-md bg-black/60 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+          <div 
+            className="relative z-10 w-[90%] max-w-md bg-black/60 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl overflow-hidden"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+          >
             {/* Pages Container with Slide Animation */}
             <div className="relative overflow-hidden">
               <div 
@@ -585,10 +621,37 @@ export const GestureUI: React.FC<GestureUIProps> = ({
         </div>
 
         {/* Manual Controls - Positioned above Safari bottom bar */}
-        <div className="pointer-events-auto self-center transition-opacity duration-500 opacity-100 md:opacity-0 md:hover:opacity-100" style={{
+        <div className="pointer-events-auto self-center transition-opacity duration-500 opacity-100 md:opacity-0 md:hover:opacity-100 flex flex-col gap-3 items-center" style={{
           paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
           marginBottom: '4rem'
         }}>
+          {/* Utility Buttons Row */}
+          <div className="flex gap-2">
+            {/* Tutorial Button */}
+            <button
+              onClick={() => {
+                setShowWelcome(true);
+                setTutorialPage(0);
+              }}
+              className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/50 hover:text-white/80 font-['Lato'] text-[9px] tracking-wide transition-all duration-200 active:scale-95"
+              title="View Tutorial"
+            >
+              📖 Tutorial
+            </button>
+
+            {/* Screenshot Button */}
+            {onScreenshot && (
+              <button
+                onClick={onScreenshot}
+                className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/50 hover:text-white/80 font-['Lato'] text-[9px] tracking-wide transition-all duration-200 active:scale-95"
+                title="Take Screenshot"
+              >
+                📸 Screenshot
+              </button>
+            )}
+          </div>
+
+          {/* Control Buttons */}
           <div className="flex gap-3 md:gap-6 bg-black/60 backdrop-blur-md px-4 py-3 md:px-6 md:py-3 rounded-full border border-white/10 text-white/90 font-['Lato'] text-[10px] md:text-xs tracking-widest uppercase shadow-lg">
              <button onClick={() => applyGestureEffect('OPEN')} className="active:scale-95 transition-transform hover:text-white">Scatter</button>
              <div className="w-[1px] bg-white/20 h-3 md:h-4 self-center"></div>
