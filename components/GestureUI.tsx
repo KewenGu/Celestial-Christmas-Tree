@@ -225,243 +225,94 @@ export const GestureUI: React.FC<GestureUIProps> = ({
       */}
       {showGiftModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-auto" style={{ 
-          background: 'radial-gradient(circle at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.95) 100%)',
-          backdropFilter: 'blur(20px)'
+          background: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(12px)'
         }}>
-          <div className="w-full max-w-2xl flex flex-col max-h-[85vh] rounded-2xl overflow-hidden shadow-[0_20px_80px_rgba(255,215,0,0.15)]" style={{
-            background: 'linear-gradient(135deg, rgba(10,10,15,0.95) 0%, rgba(15,15,20,0.98) 100%)',
-            border: '1px solid rgba(255,215,0,0.2)',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 0 0 1px rgba(0,0,0,0.5)'
+          <div className="w-full max-w-md flex flex-col max-h-[80vh] rounded-3xl overflow-hidden" style={{
+            background: 'rgba(0,0,0,0.6)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            boxShadow: '0 25px 50px rgba(0,0,0,0.5)'
           }}>
              
-             {/* Header with Decorative Elements */}
-             <div className="relative p-8 border-b border-[#FFD700]/20" style={{
-               background: 'linear-gradient(180deg, rgba(255,215,0,0.08) 0%, transparent 100%)'
-             }}>
-                {/* Decorative Corner Elements */}
-                <div className="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-[#FFD700]/40"></div>
-                <div className="absolute top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-[#FFD700]/40"></div>
-                
-                <div className="text-center">
-                  <div className="inline-flex items-center gap-3 mb-2">
-                    <span className="text-3xl">🎁</span>
-                    <h2 className="text-4xl font-['Playfair_Display'] italic text-transparent bg-clip-text bg-gradient-to-r from-[#FFD700] via-[#FFF8DC] to-[#FFD700]">
-                      Your Wish List
-                    </h2>
-                    <span className="text-3xl">🎁</span>
-                  </div>
-                  <p className="text-white/50 text-sm font-['Lato'] tracking-wide">
-                    Customize the gifts under your celestial tree
-                  </p>
-                  <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full" style={{
-                    background: 'rgba(255,215,0,0.1)',
-                    border: '1px solid rgba(255,215,0,0.3)'
-                  }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFD700" strokeWidth="2">
-                      <path d="M20 6L9 17l-5-5"/>
-                    </svg>
-                    <span className="text-[#FFD700] text-xs font-['Lato'] font-semibold tracking-wider">
-                      {giftList.length} GIFTS
-                    </span>
-                  </div>
-                </div>
+             {/* Simple Header */}
+             <div className="p-8 pb-6">
+                <h2 className="text-3xl font-['Playfair_Display'] text-white mb-2 text-center">
+                  Your Wishes
+                </h2>
+                <p className="text-white/40 text-sm font-['Lato'] text-center">
+                  {giftList.length} {giftList.length === 1 ? 'gift' : 'gifts'}
+                </p>
              </div>
              
-             {/* Scrollable List Body with Custom Scrollbar */}
-             <div className="flex-1 overflow-y-auto p-6 space-y-3" style={{
-               scrollbarWidth: 'thin',
-               scrollbarColor: 'rgba(255,215,0,0.3) rgba(255,255,255,0.05)'
-             }}>
-                <style>{`
-                  .gift-scroll::-webkit-scrollbar {
-                    width: 8px;
-                  }
-                  .gift-scroll::-webkit-scrollbar-track {
-                    background: rgba(255,255,255,0.05);
-                    border-radius: 4px;
-                  }
-                  .gift-scroll::-webkit-scrollbar-thumb {
-                    background: rgba(255,215,0,0.3);
-                    border-radius: 4px;
-                  }
-                  .gift-scroll::-webkit-scrollbar-thumb:hover {
-                    background: rgba(255,215,0,0.5);
-                  }
-                `}</style>
-                
+             {/* Clean List */}
+             <div className="flex-1 overflow-y-auto px-8 pb-6 space-y-3">
                 {giftList.map((gift, index) => (
-                  <div 
-                    key={index} 
-                    className="flex gap-3 items-center group"
-                    style={{
-                      animation: `slideIn 0.3s ease-out ${index * 0.05}s both`
-                    }}
-                  >
+                  <div key={index} className="group" style={{ opacity: 0, animation: `fadeIn 0.3s ease-out ${index * 0.05}s forwards` }}>
                     <style>{`
-                      @keyframes slideIn {
-                        from {
-                          opacity: 0;
-                          transform: translateX(-20px);
-                        }
-                        to {
-                          opacity: 1;
-                          transform: translateX(0);
-                        }
+                      @keyframes fadeIn {
+                        to { opacity: 1; }
                       }
                     `}</style>
                     
-                    {/* Number Badge */}
-                    <div className="flex items-center justify-center w-8 h-8 rounded-lg font-['Lato'] text-sm font-semibold shrink-0" style={{
-                      background: 'linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(255,215,0,0.05) 100%)',
-                      border: '1px solid rgba(255,215,0,0.2)',
-                      color: '#FFD700'
-                    }}>
-                      {index + 1}
+                    <div className="flex gap-3 items-center">
+                      <input 
+                        type="text"
+                        value={gift}
+                        onChange={(e) => updateGiftItem(index, e.target.value)}
+                        placeholder="Enter a wish..."
+                        className="flex-1 px-4 py-3 rounded-xl font-['Lato'] text-white placeholder-white/30 text-sm bg-white/5 border border-white/10 focus:border-white/30 focus:bg-white/10 transition-all duration-200 outline-none"
+                        autoFocus={index === giftList.length - 1 && gift === ""}
+                      />
+                      
+                      <button 
+                        onClick={() => deleteGiftItem(index)}
+                        className="w-9 h-9 flex items-center justify-center rounded-xl text-white/30 hover:text-white/60 hover:bg-white/10 transition-all duration-200 opacity-0 group-hover:opacity-100"
+                        title="Remove"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
                     </div>
-                    
-                    {/* Input Field */}
-                    <input 
-                      type="text"
-                      value={gift}
-                      onChange={(e) => updateGiftItem(index, e.target.value)}
-                      placeholder="✨ Enter your wish..."
-                      className="flex-1 px-4 py-3 rounded-lg font-['Lato'] text-white placeholder-white/30 text-sm transition-all duration-200 focus:outline-none"
-                      style={{
-                        background: 'rgba(255,255,255,0.03)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)'
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.background = 'rgba(255,215,0,0.05)';
-                        e.target.style.borderColor = 'rgba(255,215,0,0.5)';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(255,215,0,0.1), inset 0 2px 4px rgba(0,0,0,0.2)';
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.background = 'rgba(255,255,255,0.03)';
-                        e.target.style.borderColor = 'rgba(255,255,255,0.1)';
-                        e.target.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.2)';
-                      }}
-                      autoFocus={index === giftList.length - 1 && gift === ""}
-                    />
-                    
-                    {/* Delete Button */}
-                    <button 
-                      onClick={() => deleteGiftItem(index)}
-                      className="w-10 h-10 flex items-center justify-center rounded-lg transition-all duration-200 shrink-0 opacity-0 group-hover:opacity-100"
-                      style={{
-                        background: 'rgba(255,100,100,0.1)',
-                        border: '1px solid rgba(255,100,100,0.2)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(255,100,100,0.2)';
-                        e.currentTarget.style.borderColor = 'rgba(255,100,100,0.4)';
-                        e.currentTarget.style.transform = 'scale(1.1)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'rgba(255,100,100,0.1)';
-                        e.currentTarget.style.borderColor = 'rgba(255,100,100,0.2)';
-                        e.currentTarget.style.transform = 'scale(1)';
-                      }}
-                      title="Remove Gift"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,100,100,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M3 6h18"/>
-                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                      </svg>
-                    </button>
                   </div>
                 ))}
 
-                {/* Empty State */}
                 {giftList.length === 0 && (
-                   <div className="text-center py-16">
-                     <div className="text-6xl mb-4">🎄</div>
-                     <p className="text-white/40 text-sm font-['Lato'] italic">
-                       No wishes yet. Add your first gift below!
-                     </p>
+                   <div className="text-center py-12 text-white/30 text-sm font-['Lato']">
+                     No wishes yet
                    </div>
                 )}
              </div>
              
-             {/* Action Footer */}
-             <div className="p-6 border-t border-[#FFD700]/20" style={{
-               background: 'linear-gradient(0deg, rgba(255,215,0,0.05) 0%, transparent 100%)'
-             }}>
-                {/* Add Button */}
+             {/* Simple Footer */}
+             <div className="px-8 pb-8 space-y-3">
                 <button 
                   onClick={addGiftItem}
-                  className="w-full mb-4 py-3 rounded-lg font-['Lato'] text-sm font-semibold tracking-wider uppercase transition-all duration-200 flex items-center justify-center gap-2 group"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
-                    border: '2px dashed rgba(255,215,0,0.3)',
-                    color: 'rgba(255,215,0,0.8)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,215,0,0.1) 100%)';
-                    e.currentTarget.style.borderColor = 'rgba(255,215,0,0.6)';
-                    e.currentTarget.style.color = '#FFD700';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)';
-                    e.currentTarget.style.borderColor = 'rgba(255,215,0,0.3)';
-                    e.currentTarget.style.color = 'rgba(255,215,0,0.8)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                  }}
+                  className="w-full py-3 rounded-xl font-['Lato'] text-sm text-white/60 hover:text-white border border-white/10 hover:border-white/20 hover:bg-white/5 transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:rotate-90 transition-transform duration-300">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                   </svg>
-                  Add Another Wish
+                  Add wish
                 </button>
 
-                {/* Action Buttons */}
-                <div className="flex justify-end gap-3">
+                <div className="flex gap-3">
                   <button 
                     onClick={() => setShowGiftModal(false)}
-                    className="px-6 py-2.5 rounded-lg font-['Lato'] text-sm font-medium transition-all duration-200"
-                    style={{
-                      color: 'rgba(255,255,255,0.6)',
-                      border: '1px solid rgba(255,255,255,0.1)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = 'rgba(255,255,255,0.9)';
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
-                      e.currentTarget.style.background = 'transparent';
-                    }}
+                    className="flex-1 py-3 rounded-xl font-['Lato'] text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200"
                   >
                     Cancel
                   </button>
                   <button 
                     onClick={submitGifts}
-                    className="px-8 py-2.5 rounded-lg font-['Lato'] text-sm font-bold tracking-wide uppercase transition-all duration-200"
-                    style={{
-                      background: 'linear-gradient(135deg, #FFD700 0%, #FDB931 100%)',
-                      color: '#000',
-                      boxShadow: '0 4px 20px rgba(255,215,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 8px 30px rgba(255,215,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 20px rgba(255,215,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3)';
-                    }}
+                    className="flex-1 py-3 rounded-xl font-['Lato'] text-sm font-medium bg-white text-black hover:bg-white/90 transition-all duration-200"
                   >
-                    ✨ Apply Changes
+                    Save
                   </button>
                 </div>
              </div>
-             
-             {/* Decorative Bottom Corners */}
-             <div className="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-[#FFD700]/40"></div>
-             <div className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-[#FFD700]/40"></div>
           </div>
         </div>
       )}
