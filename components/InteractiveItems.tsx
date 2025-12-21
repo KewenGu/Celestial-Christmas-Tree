@@ -29,13 +29,13 @@ const DEFAULT_GIFT_MESSAGES = [
 
 // Premium Festive Gift Palette (Rich Reds, Greens, Golds, Creams)
 const GIFT_PALETTE = [
-  { base: '#800020', stripe: '#D4AF37' }, // Burgundy & Gold (Classic Luxury)
-  { base: '#004225', stripe: '#E5E4E2' }, // British Racing Green & Platinum
-  { base: '#F8F8FF', stripe: '#C41E3A' }, // Ghost White & Cardinal Red (Modern Festive)
-  { base: '#B8860B', stripe: '#191970' }, // Dark Goldenrod & Midnight Blue
-  { base: '#660000', stripe: '#FFD700' }, // Blood Red & Bright Gold
-  { base: '#FFFAF0', stripe: '#228B22' }, // Floral White & Forest Green
-  { base: '#4B0082', stripe: '#F0E68C' }, // Indigo & Khaki (Royal)
+  { base: '#800020', stripe: '#D4AF37', ribbon: '#FFD700' }, // Burgundy & Gold stripes & Bright Gold ribbon
+  { base: '#004225', stripe: '#E5E4E2', ribbon: '#C41E3A' }, // British Racing Green & Platinum stripes & Red ribbon
+  { base: '#F8F8FF', stripe: '#C41E3A', ribbon: '#228B22' }, // Ghost White & Red stripes & Forest Green ribbon
+  { base: '#B8860B', stripe: '#191970', ribbon: '#E5E4E2' }, // Dark Goldenrod & Navy stripes & Silver ribbon
+  { base: '#660000', stripe: '#FFD700', ribbon: '#FFFAF0' }, // Blood Red & Gold stripes & Cream ribbon
+  { base: '#FFFAF0', stripe: '#228B22', ribbon: '#C41E3A' }, // Floral White & Green stripes & Red ribbon
+  { base: '#4B0082', stripe: '#F0E68C', ribbon: '#FFD700' }, // Indigo & Khaki stripes & Gold ribbon
 ];
 
 // Premium Festive Frame Palette
@@ -71,6 +71,7 @@ interface StaticItemData {
   scale: number;
   color: string;       // Base color
   stripeColor?: string; // Color for stripes
+  ribbonColor?: string; // Color for ribbons (different from stripes)
   hasStripes: boolean;  // Whether to show stripes or keep it solid
   phase: number; 
 }
@@ -179,7 +180,7 @@ const AsyncFrameImage: React.FC<{ url: string }> = ({ url }) => {
 };
 
 const Item: React.FC<{ 
-  data: InteractiveItemData & { phase: number, stripeColor?: string, hasStripes?: boolean }; 
+  data: InteractiveItemData & { phase: number, stripeColor?: string, ribbonColor?: string, hasStripes?: boolean }; 
   appState: AppState;
   isTargeted: boolean;
 }> = ({ data, appState, isTargeted }) => {
@@ -334,17 +335,11 @@ const Item: React.FC<{
               {/* Lid Ribbon (Cross) */}
               <mesh position={[0, 0.06, 0]}>
                   <boxGeometry args={[1.06, 0.11, 0.15]} />
-                  <meshStandardMaterial color={data.stripeColor || "#FFF"} metalness={0.7} roughness={0.2} />
+                  <meshStandardMaterial color={data.ribbonColor || "#FFF"} metalness={0.7} roughness={0.2} />
               </mesh>
               <mesh position={[0, 0.06, 0]} rotation={[0, Math.PI / 2, 0]}>
                   <boxGeometry args={[1.06, 0.11, 0.15]} />
-                  <meshStandardMaterial color={data.stripeColor || "#FFF"} metalness={0.7} roughness={0.2} />
-              </mesh>
-              
-              {/* Bow */}
-              <mesh position={[0, 0.15, 0]}>
-                 <torusKnotGeometry args={[0.15, 0.04, 64, 8]} />
-                 <meshStandardMaterial color={data.stripeColor || "#FFF"} metalness={0.8} roughness={0.2} />
+                  <meshStandardMaterial color={data.ribbonColor || "#FFF"} metalness={0.7} roughness={0.2} />
               </mesh>
            </group>
         </group>
@@ -352,11 +347,11 @@ const Item: React.FC<{
         {/* Body Vertical Ribbons */}
         <mesh position={[0, 0, 0]}>
             <boxGeometry args={[1.02, 1, 0.1]} />
-            <meshStandardMaterial color={data.stripeColor || "#FFF"} metalness={0.7} roughness={0.2} />
+            <meshStandardMaterial color={data.ribbonColor || "#FFF"} metalness={0.7} roughness={0.2} />
         </mesh>
          <mesh position={[0, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
             <boxGeometry args={[1.02, 1, 0.1]} />
-            <meshStandardMaterial color={data.stripeColor || "#FFF"} metalness={0.7} roughness={0.2} />
+            <meshStandardMaterial color={data.ribbonColor || "#FFF"} metalness={0.7} roughness={0.2} />
         </mesh>
       </group>
     );
@@ -467,6 +462,7 @@ export const InteractiveItems: React.FC<InteractiveItemsProps> = ({ appState, in
         scale: 0.3, 
         color: theme.base,
         stripeColor: theme.stripe,
+        ribbonColor: theme.ribbon,
         giftContent: activeMessages[i % activeMessages.length],
         phase: Math.random() * Math.PI * 2,
         hasStripes: Math.random() > 0.4 // Slightly more solids for cleaner look
