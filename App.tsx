@@ -37,8 +37,12 @@ const App: React.FC = () => {
       <Canvas 
         shadows 
         camera={{ position: cameraPosition, fov: CAMERA_FOV }}
-        dpr={[1, 2]} // Support high-res displays
-        gl={{ antialias: false }} // Let post-processing handle AA logic if needed, usually bloom prefers false
+        dpr={[1, 3]} // Support up to 3x pixel ratio for high-DPI mobile displays
+        gl={{ 
+          antialias: true, // Enable antialiasing for sharper edges
+          alpha: false,
+          powerPreference: 'high-performance'
+        }}
       >
         <Suspense fallback={null}>
           <Experience 
