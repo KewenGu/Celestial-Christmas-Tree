@@ -4,7 +4,9 @@ import * as THREE from 'three';
 
 const SNOWFLAKE_COUNT = 2000;
 const SPREAD_AREA = 30;
-const HEIGHT_RANGE = 20;
+const HEIGHT_TOP = 15;      // Top of the snow area
+const HEIGHT_BOTTOM = -5;   // Bottom of the snow area
+const HEIGHT_RANGE = HEIGHT_TOP - HEIGHT_BOTTOM; // Total height
 const FALL_SPEED = 0.02;
 const DRIFT_SPEED = 0.3;
 
@@ -25,9 +27,9 @@ export const Snowflakes: React.FC = () => {
       const i3 = i * 3;
       
       // Random position in a cube around the tree
-      positions[i3] = (Math.random() - 0.5) * SPREAD_AREA;     // x
-      positions[i3 + 1] = Math.random() * HEIGHT_RANGE;         // y
-      positions[i3 + 2] = (Math.random() - 0.5) * SPREAD_AREA; // z
+      positions[i3] = (Math.random() - 0.5) * SPREAD_AREA;              // x
+      positions[i3 + 1] = HEIGHT_BOTTOM + Math.random() * HEIGHT_RANGE; // y - distribute throughout height
+      positions[i3 + 2] = (Math.random() - 0.5) * SPREAD_AREA;          // z
       
       // Random fall speed variation
       velocities[i] = 0.5 + Math.random() * 0.5;
@@ -57,8 +59,8 @@ export const Snowflakes: React.FC = () => {
       positionAttribute.array[i3 + 1] -= FALL_SPEED * velocities[i];
       
       // Reset snowflake to top when it falls below ground
-      if (positionAttribute.array[i3 + 1] < -2) {
-        positionAttribute.array[i3 + 1] = HEIGHT_RANGE;
+      if (positionAttribute.array[i3 + 1] < HEIGHT_BOTTOM) {
+        positionAttribute.array[i3 + 1] = HEIGHT_TOP;
         positionAttribute.array[i3] = (Math.random() - 0.5) * SPREAD_AREA;
         positionAttribute.array[i3 + 2] = (Math.random() - 0.5) * SPREAD_AREA;
       }
