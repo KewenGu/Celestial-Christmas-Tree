@@ -318,7 +318,12 @@ export const GestureUI: React.FC<GestureUIProps> = ({
       )}
 
       {/* Main Gesture UI Layer */}
-      <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 md:p-8 z-10">
+      <div className="absolute inset-0 pointer-events-none flex flex-col justify-between z-10" style={{
+        paddingTop: 'max(1rem, env(safe-area-inset-top))',
+        paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
+        paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+        paddingRight: 'max(1rem, env(safe-area-inset-right))'
+      }}>
         
         {/* Hidden File Input (Supports Multiple) */}
         <input 
@@ -380,7 +385,9 @@ export const GestureUI: React.FC<GestureUIProps> = ({
         </div>
 
         {/* Manual Controls */}
-        <div className="pointer-events-auto self-center mb-6 md:mb-4 transition-opacity duration-500 opacity-100 md:opacity-0 md:hover:opacity-100">
+        <div className="pointer-events-auto self-center transition-opacity duration-500 opacity-100 md:opacity-0 md:hover:opacity-100" style={{
+          marginBottom: 'max(1.5rem, env(safe-area-inset-bottom))'
+        }}>
           <div className="flex gap-3 md:gap-6 bg-black/60 backdrop-blur-md px-4 py-3 md:px-6 md:py-3 rounded-full border border-white/10 text-white/90 font-['Lato'] text-[10px] md:text-xs tracking-widest uppercase shadow-lg">
              <button onClick={() => applyGestureEffect('OPEN')} className="active:scale-95 transition-transform hover:text-white">Scatter</button>
              <div className="w-[1px] bg-white/20 h-3 md:h-4 self-center"></div>
