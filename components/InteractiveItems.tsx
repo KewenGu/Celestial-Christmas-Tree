@@ -76,17 +76,28 @@ interface StaticItemData {
 }
 
 // Reusable Fallback Component (Visual Placeholder)
-const FallbackContent: React.FC<{ label?: string, color?: string }> = ({ label = "Merry Christmas", color }) => (
+const FallbackContent: React.FC<{ label?: string, color?: string }> = ({ label = "🎄", color }) => (
   <group>
     <mesh>
       <planeGeometry args={[0.9, 1.3]} />
-      {/* Fallback texture: A nice warm festive red or green unless specified */}
+      {/* Beautiful gradient-like fallback */}
       <meshStandardMaterial 
-        color={color || (Math.random() > 0.5 ? "#8B0000" : "#006400")} 
-        roughness={0.8} 
+        color={color || "#1a472a"} 
+        roughness={0.6}
+        metalness={0.3}
+        emissive={color || "#0d2515"}
+        emissiveIntensity={0.5}
       />
     </mesh>
-    <Text position={[0, 0, 0.01]} fontSize={0.1} color="white" maxWidth={0.8} textAlign="center">
+    <Text 
+      position={[0, 0, 0.01]} 
+      fontSize={0.15} 
+      color="#FFD700" 
+      maxWidth={0.8} 
+      textAlign="center"
+      anchorX="center"
+      anchorY="middle"
+    >
       {label}
     </Text>
   </group>
@@ -107,14 +118,13 @@ const AsyncFrameImage: React.FC<{ url: string }> = ({ url }) => {
     setStatus('loading');
     
     const loader = new THREE.TextureLoader();
-    // FIX: Set crossOrigin to anonymous to allow loading images from Unsplash/external sources in WebGL
+    // Set crossOrigin for external images
     loader.setCrossOrigin('anonymous');
     
-    // FIX: Add cache buster to force a fresh request with correct CORS headers.
-    // This solves issues where the browser uses a cached, opaque response for the WebGL texture request.
-    const safeUrl = url.startsWith('http') 
-      ? (url.includes('?') ? `${url}&v=${Date.now()}` : `${url}?v=${Date.now()}`)
-      : url;
+    // Only add cache buster for blob URLs (user uploads), not for external URLs
+    const safeUrl = url.startsWith('blob:') 
+      ? url 
+      : url; // Use URL as-is for external images to avoid CORS issues
 
     // Load the texture
     loader.load(
@@ -133,7 +143,7 @@ const AsyncFrameImage: React.FC<{ url: string }> = ({ url }) => {
       },
       undefined, // onProgress
       (err) => {
-        console.error("Error loading texture:", url, err);
+        console.warn("Failed to load texture:", url, err);
         if (isMounted) setStatus('error');
       }
     );
@@ -148,11 +158,11 @@ const AsyncFrameImage: React.FC<{ url: string }> = ({ url }) => {
   }, [url]);
 
   if (status === 'error') {
-    return <FallbackContent label="Image Error" />;
+    return <FallbackContent label="🎄 Merry Christmas" color="#1a472a" />;
   }
 
   if (status === 'loading' || !texture) {
-    return <FallbackContent label="Loading..." color="#333333" />;
+    return <FallbackContent label="⏳ Loading..." color="#2d5a3d" />;
   }
 
   return (
