@@ -169,10 +169,12 @@ const AsyncFrameImage: React.FC<{ url: string }> = ({ url }) => {
   return (
     <mesh position={[0, 0, 0]}>
       <planeGeometry args={[0.9, 1.3]} />
-      {/* Basic Material ensures the photo is fully bright and visible regardless of lighting */}
-      <meshBasicMaterial 
+      {/* Use Standard Material for proper lighting integration and avoid bloom issues */}
+      <meshStandardMaterial 
         map={texture} 
-        toneMapped={false} 
+        toneMapped={true}
+        emissive="#000000"
+        emissiveIntensity={0}
         side={THREE.DoubleSide}
       />
     </mesh>
@@ -305,7 +307,7 @@ const Item: React.FC<{
         <group ref={paperRef} position={[0, 0.5, 0]} scale={[0, 0, 0]}>
            <mesh castShadow>
              <planeGeometry args={[0.8, 0.6]} />
-             <meshStandardMaterial color="#FFFFE0" roughness={0.9} />
+             <meshStandardMaterial color="#F5F5DC" roughness={0.9} metalness={0} />
            </mesh>
            <Text 
              position={[0, 0, 0.01]} 

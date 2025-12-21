@@ -72,10 +72,10 @@ export const Experience: React.FC<ExperienceProps> = ({ appState, interactionMod
       {/* Post Processing for Cinematic Feel */}
       <EffectComposer disableNormalPass>
         <Bloom 
-          luminanceThreshold={0.5} 
+          luminanceThreshold={0.9}
           mipmapBlur 
-          intensity={1.5} 
-          radius={0.6}
+          intensity={1.2} 
+          radius={0.5}
         />
         <Vignette eskil={false} offset={0.1} darkness={1.1} />
       </EffectComposer>
