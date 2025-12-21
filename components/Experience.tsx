@@ -4,6 +4,7 @@ import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import { Needles } from './Needles';
 import { InteractiveItems } from './InteractiveItems';
 import { Decorations } from './Decorations';
+import { Snowflakes } from './Snowflakes';
 import { AppState, InteractionMode } from '../types';
 import { NEEDLES_COUNT, AUTO_ROTATE_SPEED } from '../constants';
 
@@ -66,6 +67,7 @@ export const Experience: React.FC<ExperienceProps> = ({ appState, interactionMod
         userPhotos={userPhotos} 
         userGiftMessages={userGiftMessages} 
       />
+      <Snowflakes />
       
       {/* Post Processing for Cinematic Feel */}
       <EffectComposer disableNormalPass>
