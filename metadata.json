@@ -1,0 +1,7 @@
+{
+  "name": "Celestial Christmas Tree",
+  "description": "A high-fidelity 3D interactive particle experience featuring a transforming Christmas tree in deep space.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
