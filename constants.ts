@@ -87,16 +87,16 @@ export const DEFAULT_GIFT_MESSAGES = [
 ];
 
 export const FESTIVE_IMAGES = [
-  "https://images.unsplash.com/photo-1512474932049-78ea796b6c42?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1576692131267-cf522760a218?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1543094209-4c126601b1e9?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1513297887119-d46091b24bfa?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1543589077-47d81606c1bf?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1482638202333-c77d501dd2ec?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1575373803274-a622a8459286?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1511108690759-009324a90311?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1544979590-2799616a614d?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1606819717115-9159c900370b?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1512389142860-9c449e58a543?w=600&q=80", // Christmas table
+  "https://images.unsplash.com/photo-1482517967863-00e15c9b44be?w=600&q=80", // Winter cabin
+  "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=600&q=80", // Snow landscape
+  "https://images.unsplash.com/photo-1511268559489-34b624fbfcf5?w=600&q=80", // Christmas lights bokeh
+  "https://images.unsplash.com/photo-1545048702-79362596cdc9?w=600&q=80", // Gift boxes
+  "https://images.unsplash.com/photo-1514064019862-23e2a332a6a6?w=600&q=80", // Christmas ornament
+  "https://images.unsplash.com/photo-1478144592103-25e218a04891?w=600&q=80", // Christmas tree
+  "https://images.unsplash.com/photo-1467810563316-b5476525c0f9?w=600&q=80", // Winter forest path
+  "https://images.unsplash.com/photo-1418065460487-3e41a6c84dc5?w=600&q=80", // Snowy mountain
+  "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=600&q=80", // Christmas wreath
 ];
 
 // External URLs
