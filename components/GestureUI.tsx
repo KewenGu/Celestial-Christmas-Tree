@@ -385,10 +385,10 @@ export const GestureUI: React.FC<GestureUIProps> = ({
         </div>
 
         {/* Manual Controls */}
-        <div className="pointer-events-auto self-center transition-opacity duration-500 opacity-100 md:opacity-0 md:hover:opacity-100 relative z-50" style={{
-          marginBottom: 'calc(3rem + env(safe-area-inset-bottom, 20px))'
+        <div className="pointer-events-auto self-center transition-opacity duration-500 opacity-100 md:opacity-0 md:hover:opacity-100" style={{
+          marginBottom: 'calc(2rem + env(safe-area-inset-bottom, 20px))'
         }}>
-          <div className="flex gap-3 md:gap-6 bg-black/80 backdrop-blur-md px-5 py-4 md:px-6 md:py-3 rounded-full border-2 border-white/20 text-white font-['Lato'] text-xs md:text-xs tracking-widest uppercase shadow-2xl">
+          <div className="flex gap-3 md:gap-6 bg-black/60 backdrop-blur-md px-4 py-3 md:px-6 md:py-3 rounded-full border border-white/10 text-white/90 font-['Lato'] text-[10px] md:text-xs tracking-widest uppercase shadow-lg">
              <button onClick={() => applyGestureEffect('OPEN')} className="active:scale-95 transition-transform hover:text-white">Scatter</button>
              <div className="w-[1px] bg-white/20 h-3 md:h-4 self-center"></div>
              <button onClick={() => applyGestureEffect('FIST')} className="active:scale-95 transition-transform hover:text-white">Tree</button>
