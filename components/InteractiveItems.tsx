@@ -92,16 +92,17 @@ const FallbackContent: React.FC<{ label?: string, color?: string }> = ({ label =
     </mesh>
     <Text 
       position={[0, 0, 0.05]} 
-      fontSize={0.15}
+      fontSize={0.10}
       color="#FFFFFF"
       maxWidth={0.7} 
       textAlign="center"
       anchorX="center"
       anchorY="middle"
-      outlineWidth={0.01}
+      outlineWidth={0.008}
       outlineColor="#000000"
       fillOpacity={1}
       material-toneMapped={false}
+      font="https://fonts.gstatic.com/s/raleway/v14/1Ptrg8zYS_SKggPNwK4vaqI.woff"
     >
       {label}
     </Text>
