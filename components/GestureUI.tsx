@@ -289,7 +289,7 @@ export const GestureUI: React.FC<GestureUIProps> = ({
              <div className="px-8 pb-8 space-y-3">
                 <button 
                   onClick={addGiftItem}
-                  className="w-full py-3 rounded-xl font-['Lato'] text-sm text-white/60 hover:text-white border-2 border-white/20 hover:border-white/30 hover:bg-white/5 transition-all duration-200 flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl font-['Lato'] text-sm text-white/60 hover:text-white border border-white/10 hover:border-white/20 hover:bg-white/5 transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
