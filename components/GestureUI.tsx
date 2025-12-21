@@ -646,7 +646,7 @@ export const GestureUI: React.FC<GestureUIProps> = ({
               className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/50 hover:text-white/80 font-['Lato'] text-[9px] tracking-wide transition-all duration-200 active:scale-95"
               title="View Tutorial"
             >
-              📖 Tutorial
+              Tutorial
             </button>
 
             {/* Screenshot Button */}
@@ -656,7 +656,7 @@ export const GestureUI: React.FC<GestureUIProps> = ({
                 className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/50 hover:text-white/80 font-['Lato'] text-[9px] tracking-wide transition-all duration-200 active:scale-95"
                 title="Take Screenshot"
               >
-                📸 Screenshot
+                Screenshot
               </button>
             )}
           </div>
