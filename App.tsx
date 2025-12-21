@@ -42,23 +42,50 @@ const App: React.FC = () => {
 
     try {
       // Convert canvas to blob
-      canvas.toBlob((blob) => {
+      canvas.toBlob(async (blob) => {
         if (!blob) return;
         
-        // Create download link
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `christmas-tree-${Date.now()}.png`;
-        link.click();
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         
-        // Cleanup
-        URL.revokeObjectURL(url);
+        if (isMobile && navigator.share) {
+          // Mobile: Use Web Share API to save to Photos/Gallery
+          try {
+            const file = new File([blob], `christmas-tree-${Date.now()}.png`, { type: 'image/png' });
+            await navigator.share({
+              files: [file],
+              title: 'My Christmas Tree',
+              text: 'Check out my Christmas tree! 🎄'
+            });
+          } catch (shareError) {
+            // If share is cancelled or fails, fallback to opening image
+            console.log('Share cancelled or failed:', shareError);
+            openImageInNewTab(blob);
+          }
+        } else {
+          // Desktop or no share support: Download file
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `christmas-tree-${Date.now()}.png`;
+          link.click();
+          URL.revokeObjectURL(url);
+        }
       }, 'image/png', 1.0);
     } catch (error) {
       console.error('Screenshot failed:', error);
     }
   }, []);
+
+  // Helper function to open image in new tab (fallback for mobile)
+  const openImageInNewTab = (blob: Blob) => {
+    const url = URL.createObjectURL(blob);
+    const newWindow = window.open(url, '_blank');
+    if (newWindow) {
+      newWindow.onload = () => URL.revokeObjectURL(url);
+    } else {
+      URL.revokeObjectURL(url);
+    }
+  };
 
   return (
     <div ref={canvasContainerRef} className="w-full h-screen bg-black relative select-none overflow-hidden">
