@@ -98,7 +98,8 @@ const App: React.FC = () => {
         gl={{ 
           antialias: true, // Enable antialiasing for sharper edges
           alpha: false,
-          powerPreference: 'high-performance'
+          powerPreference: 'high-performance',
+          preserveDrawingBuffer: true // Required for screenshots
         }}
       >
         <Suspense fallback={null}>
