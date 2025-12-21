@@ -91,13 +91,17 @@ const FallbackContent: React.FC<{ label?: string, color?: string }> = ({ label =
       />
     </mesh>
     <Text 
-      position={[0, 0, 0.01]} 
-      fontSize={0.15} 
-      color="#FFD700" 
-      maxWidth={0.8} 
+      position={[0, 0, 0.05]} 
+      fontSize={0.15}
+      color="#FFFFFF"
+      maxWidth={0.7} 
       textAlign="center"
       anchorX="center"
       anchorY="middle"
+      outlineWidth={0.01}
+      outlineColor="#000000"
+      fillOpacity={1}
+      material-toneMapped={false}
     >
       {label}
     </Text>
@@ -159,11 +163,11 @@ const AsyncFrameImage: React.FC<{ url: string }> = ({ url }) => {
   }, [url]);
 
   if (status === 'error') {
-    return <FallbackContent label="🎄 Merry Christmas" color="#1a472a" />;
+    return <FallbackContent label="Tap PICK A PHOTO to add your photo" color="#1a472a" />;
   }
 
   if (status === 'loading' || !texture) {
-    return <FallbackContent label="⏳ Loading..." color="#2d5a3d" />;
+    return <FallbackContent label="Loading..." color="#2d5a3d" />;
   }
 
   return (
