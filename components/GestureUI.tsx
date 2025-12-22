@@ -270,11 +270,28 @@ export const GestureUI: React.FC<GestureUIProps> = ({
     const files = e.target.files;
     if (files && files.length > 0) {
       const newPhotos: string[] = [];
-      Array.from(files).forEach((file) => {
-         // Explicitly cast to Blob or File to avoid 'unknown' error
-         newPhotos.push(URL.createObjectURL(file as File));
+      const filePromises = Array.from(files).map((file) => {
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            if (event.target?.result) {
+              resolve(event.target.result as string); // base64 data URL
+            } else {
+              reject(new Error('Failed to read file'));
+            }
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file); // Convert to base64 for localStorage
+        });
       });
-      onUserPhotosUpload(newPhotos);
+
+      Promise.all(filePromises)
+        .then((base64Photos) => {
+          onUserPhotosUpload(base64Photos);
+        })
+        .catch((error) => {
+          console.error('Error reading files:', error);
+        });
     }
     // Reset input to allow re-uploading the same file if needed
     if (e.target) e.target.value = '';

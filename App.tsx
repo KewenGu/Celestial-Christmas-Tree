@@ -1,4 +1,4 @@
-import React, { useState, Suspense, useMemo, useCallback, useRef } from 'react';
+import React, { useState, Suspense, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Loader } from '@react-three/drei';
 import { Experience } from './components/Experience';
@@ -6,12 +6,63 @@ import { GestureUI } from './components/GestureUI';
 import { AppState, InteractionMode } from './types';
 import { CAMERA_POSITION_DESKTOP, CAMERA_POSITION_MOBILE, CAMERA_FOV } from './constants';
 
+// LocalStorage keys
+const STORAGE_KEYS = {
+  USER_PHOTOS: 'celestial-tree-user-photos',
+  USER_GIFTS: 'celestial-tree-user-gifts',
+};
+
 const App: React.FC = () => {
-  // State Management
+  // State Management with localStorage initialization
   const [appState, setAppState] = useState<AppState>(AppState.TREE_SHAPE);
   const [interactionMode, setInteractionMode] = useState<InteractionMode>(InteractionMode.IDLE);
-  const [userPhotos, setUserPhotos] = useState<string[]>([]);
-  const [userGiftMessages, setUserGiftMessages] = useState<string[]>([]);
+  
+  // Initialize from localStorage
+  const [userPhotos, setUserPhotos] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.USER_PHOTOS);
+      return saved ? JSON.parse(saved) : [];
+    } catch (error) {
+      console.error('Failed to load photos from localStorage:', error);
+      return [];
+    }
+  });
+  
+  const [userGiftMessages, setUserGiftMessages] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.USER_GIFTS);
+      return saved ? JSON.parse(saved) : [];
+    } catch (error) {
+      console.error('Failed to load gifts from localStorage:', error);
+      return [];
+    }
+  });
+
+  // Persist userPhotos to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      if (userPhotos.length > 0) {
+        localStorage.setItem(STORAGE_KEYS.USER_PHOTOS, JSON.stringify(userPhotos));
+      } else {
+        localStorage.removeItem(STORAGE_KEYS.USER_PHOTOS);
+      }
+    } catch (error) {
+      console.error('Failed to save photos to localStorage:', error);
+    }
+  }, [userPhotos]);
+
+  // Persist userGiftMessages to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      if (userGiftMessages.length > 0) {
+        localStorage.setItem(STORAGE_KEYS.USER_GIFTS, JSON.stringify(userGiftMessages));
+      } else {
+        localStorage.removeItem(STORAGE_KEYS.USER_GIFTS);
+      }
+    } catch (error) {
+      console.error('Failed to save gifts to localStorage:', error);
+    }
+  }, [userGiftMessages]);
 
   // Canvas container ref for screenshot
   const canvasContainerRef = useRef<HTMLDivElement>(null);
@@ -22,16 +73,10 @@ const App: React.FC = () => {
     return isMobile ? CAMERA_POSITION_MOBILE : CAMERA_POSITION_DESKTOP;
   }, []);
 
-  // Cleanup old blob URLs when new photos are uploaded
+  // Update photos handler - no need to cleanup blob URLs since we're using base64
   const handlePhotosUpload = useCallback((newPhotos: string[]) => {
-    // Revoke old blob URLs to free memory
-    userPhotos.forEach(url => {
-      if (url.startsWith('blob:')) {
-        URL.revokeObjectURL(url);
-      }
-    });
     setUserPhotos(newPhotos);
-  }, [userPhotos]);
+  }, []);
 
   // Screenshot function
   const takeScreenshot = useCallback(() => {
