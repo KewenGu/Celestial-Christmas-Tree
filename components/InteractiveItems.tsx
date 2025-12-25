@@ -175,8 +175,6 @@ const GradientPlaceholder: React.FC<{ primaryColor: string, secondaryColor: stri
         textAlign="center"
         anchorX="center"
         anchorY="middle"
-        outlineWidth={0.01}
-        outlineColor="#000000"
         fillOpacity={0.9}
         material-toneMapped={false}
         font="https://fonts.gstatic.com/s/raleway/v14/1Ptrg8zYS_SKggPNwK4vaqI.woff"
