@@ -21,9 +21,15 @@ const App: React.FC = () => {
   const [userPhotos, setUserPhotos] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.USER_PHOTOS);
-      return saved ? JSON.parse(saved) : [];
+      if (saved) {
+        const photos = JSON.parse(saved);
+        console.log(`📂 Loaded ${photos.length} photo(s) from localStorage`);
+        return photos;
+      }
+      console.log('📂 No saved photos found');
+      return [];
     } catch (error) {
-      console.error('Failed to load photos from localStorage:', error);
+      console.error('❌ Failed to load photos from localStorage:', error);
       return [];
     }
   });
@@ -31,9 +37,15 @@ const App: React.FC = () => {
   const [userGiftMessages, setUserGiftMessages] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.USER_GIFTS);
-      return saved ? JSON.parse(saved) : [];
+      if (saved) {
+        const gifts = JSON.parse(saved);
+        console.log(`🎁 Loaded ${gifts.length} gift(s) from localStorage`);
+        return gifts;
+      }
+      console.log('🎁 No saved gifts found');
+      return [];
     } catch (error) {
-      console.error('Failed to load gifts from localStorage:', error);
+      console.error('❌ Failed to load gifts from localStorage:', error);
       return [];
     }
   });
@@ -42,12 +54,20 @@ const App: React.FC = () => {
   useEffect(() => {
     try {
       if (userPhotos.length > 0) {
-        localStorage.setItem(STORAGE_KEYS.USER_PHOTOS, JSON.stringify(userPhotos));
+        const dataStr = JSON.stringify(userPhotos);
+        const sizeInMB = (dataStr.length / 1024 / 1024).toFixed(2);
+        console.log(`💾 Saving ${userPhotos.length} photos to localStorage (${sizeInMB}MB)`);
+        localStorage.setItem(STORAGE_KEYS.USER_PHOTOS, dataStr);
+        console.log('✅ Photos saved successfully');
       } else {
         localStorage.removeItem(STORAGE_KEYS.USER_PHOTOS);
+        console.log('🗑️ Photos cleared from localStorage');
       }
     } catch (error) {
-      console.error('Failed to save photos to localStorage:', error);
+      console.error('❌ Failed to save photos to localStorage:', error);
+      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+        alert('照片太大了！请选择较小的图片或减少图片数量。\n\nTip: localStorage 限制约 5-10MB');
+      }
     }
   }, [userPhotos]);
 
@@ -55,12 +75,15 @@ const App: React.FC = () => {
   useEffect(() => {
     try {
       if (userGiftMessages.length > 0) {
+        console.log(`🎁 Saving ${userGiftMessages.length} gifts to localStorage`);
         localStorage.setItem(STORAGE_KEYS.USER_GIFTS, JSON.stringify(userGiftMessages));
+        console.log('✅ Gifts saved successfully');
       } else {
         localStorage.removeItem(STORAGE_KEYS.USER_GIFTS);
+        console.log('🗑️ Gifts cleared from localStorage');
       }
     } catch (error) {
-      console.error('Failed to save gifts to localStorage:', error);
+      console.error('❌ Failed to save gifts to localStorage:', error);
     }
   }, [userGiftMessages]);
 

@@ -266,31 +266,70 @@ export const GestureUI: React.FC<GestureUIProps> = ({
     }
   };
 
+  // Helper function to compress image
+  const compressImage = (file: File, maxWidth: number = 800, quality: number = 0.8): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          // Create canvas for compression
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Resize if needed
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Failed to get canvas context'));
+            return;
+          }
+
+          // Draw and compress
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          
+          // Log compression stats
+          const originalSize = ((e.target?.result as string).length / 1024).toFixed(0);
+          const compressedSize = (compressedDataUrl.length / 1024).toFixed(0);
+          console.log(`📸 Compressed: ${originalSize}KB → ${compressedSize}KB`);
+          
+          resolve(compressedDataUrl);
+        };
+        img.onerror = reject;
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      const newPhotos: string[] = [];
+      console.log(`📤 Uploading ${files.length} file(s)...`);
+      
       const filePromises = Array.from(files).map((file) => {
-        return new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            if (event.target?.result) {
-              resolve(event.target.result as string); // base64 data URL
-            } else {
-              reject(new Error('Failed to read file'));
-            }
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(file); // Convert to base64 for localStorage
-        });
+        // Compress images to reduce localStorage usage
+        return compressImage(file, 800, 0.8);
       });
 
       Promise.all(filePromises)
-        .then((base64Photos) => {
-          onUserPhotosUpload(base64Photos);
+        .then((compressedPhotos) => {
+          console.log(`✅ ${compressedPhotos.length} photo(s) processed`);
+          onUserPhotosUpload(compressedPhotos);
         })
         .catch((error) => {
-          console.error('Error reading files:', error);
+          console.error('❌ Error processing files:', error);
+          alert('上传照片失败，请重试');
         });
     }
     // Reset input to allow re-uploading the same file if needed
