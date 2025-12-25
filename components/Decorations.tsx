@@ -1,6 +1,11 @@
+// React
 import React, { useMemo, useRef, useEffect } from 'react';
+
+// Three.js & React Three Fiber
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
+
+// Types & Utils
 import { AppState } from '../types';
 import { getSpherePosition } from '../utils/coordinates';
 

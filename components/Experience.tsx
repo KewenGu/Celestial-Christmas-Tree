@@ -1,10 +1,17 @@
+// React
 import React from 'react';
+
+// Three.js & React Three Fiber
 import { OrbitControls, Stars, Environment } from '@react-three/drei';
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
+
+// Components
 import { Needles } from './Needles';
 import { InteractiveItems } from './InteractiveItems';
 import { Decorations } from './Decorations';
 import { Snowflakes } from './Snowflakes';
+
+// Types & Constants
 import { AppState, InteractionMode } from '../types';
 import { NEEDLES_COUNT, AUTO_ROTATE_SPEED } from '../constants';
 

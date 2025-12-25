@@ -60,3 +60,4 @@ export const getOptimalParticleCount = (
   return isMobileDevice() ? Math.floor(baseCount * mobileReduction) : baseCount;
 };
 
+

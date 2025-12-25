@@ -1,8 +1,13 @@
+// React & Three.js
 import React, { useState, Suspense, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Loader } from '@react-three/drei';
+
+// Components
 import { Experience } from './components/Experience';
 import { GestureUI } from './components/GestureUI';
+
+// Types & Constants
 import { AppState, InteractionMode } from './types';
 import { CAMERA_POSITION_DESKTOP, CAMERA_POSITION_MOBILE, CAMERA_FOV } from './constants';
 

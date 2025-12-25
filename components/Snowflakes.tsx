@@ -1,6 +1,9 @@
+// React
 import React, { useRef, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+
+// Three.js & React Three Fiber
 import * as THREE from 'three';
+import { useFrame } from '@react-three/fiber';
 
 const SNOWFLAKE_COUNT = 2000;
 const SPREAD_AREA = 30;

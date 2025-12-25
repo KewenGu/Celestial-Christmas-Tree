@@ -1,7 +1,12 @@
+// React
 import React, { useEffect, useRef, useState } from 'react';
-import { AppState, InteractionMode } from '../types';
+
+// External Libraries
 import Webcam from 'react-webcam';
 import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
+
+// Types
+import { AppState, InteractionMode } from '../types';
 
 interface GestureUIProps {
   appState: AppState;

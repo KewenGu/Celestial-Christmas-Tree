@@ -113,3 +113,4 @@ All constants are now centralized in `constants.ts`:
 
 **Migration Notes**: No migration needed. All changes are internal optimizations that maintain the existing API.
 
+
