@@ -139,7 +139,30 @@ const AsyncFrameImage: React.FC<{ url: string }> = ({ url }) => {
         if (isMounted) {
           loadedTex.colorSpace = THREE.SRGBColorSpace;
           // Fix orientation for some uploaded images
-          loadedTex.flipY = true; 
+          loadedTex.flipY = true;
+          
+          // Calculate aspect ratios to implement "object-fit: cover" behavior
+          const frameWidth = 0.9;
+          const frameHeight = 1.3;
+          const frameAspect = frameWidth / frameHeight; // ~0.69 (portrait)
+          
+          // Get actual image dimensions from the texture
+          const imageAspect = loadedTex.image.width / loadedTex.image.height;
+          
+          // Apply "cover" logic: scale and center the image to fill the frame
+          // without distortion, cropping the excess
+          if (imageAspect > frameAspect) {
+            // Image is wider than frame - fit height, crop sides
+            const scale = frameAspect / imageAspect;
+            loadedTex.repeat.set(scale, 1);
+            loadedTex.offset.set((1 - scale) / 2, 0);
+          } else {
+            // Image is taller than frame - fit width, crop top/bottom
+            const scale = imageAspect / frameAspect;
+            loadedTex.repeat.set(1, scale);
+            loadedTex.offset.set(0, (1 - scale) / 2);
+          }
+          
           loadedTexture = loadedTex;
           setTexture(loadedTex);
           setStatus('success');
