@@ -14,13 +14,13 @@ interface GestureUIProps {
   onScreenshot?: () => void;
 }
 
-// Constants
-const GESTURE_CONFIDENCE_THRESHOLD = 5;
+// Constants - Optimized for better responsiveness
+const GESTURE_CONFIDENCE_THRESHOLD = 3; // Reduced from 5 to 3 for faster response
 const MEDIAPIPE_WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
 const HAND_LANDMARKER_MODEL_URL = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
-const PINCH_DISTANCE_THRESHOLD = 0.08;
-const THUMB_EXTENDED_DISTANCE_THRESHOLD = 0.2;
-const FINGER_EXTENSION_MULTIPLIER = 1.2;
+const PINCH_DISTANCE_THRESHOLD = 0.10; // Increased from 0.08 for easier pinch detection
+const THUMB_EXTENDED_DISTANCE_THRESHOLD = 0.18; // Reduced from 0.2 for easier thumb detection
+const FINGER_EXTENSION_MULTIPLIER = 1.15; // Reduced from 1.2 for easier finger extension detection
 
 // Default gifts to populate the list if empty (Syncs with InteractiveItems)
 const DEFAULT_GIFTS = [
@@ -161,9 +161,9 @@ export const GestureUI: React.FC<GestureUIProps> = ({
           },
           runningMode: "VIDEO",
           numHands: 1,
-          minHandDetectionConfidence: 0.5,
-          minHandPresenceConfidence: 0.5,
-          minTrackingConfidence: 0.5
+          minHandDetectionConfidence: 0.3, // Reduced from 0.5 for better detection
+          minHandPresenceConfidence: 0.3,  // Reduced from 0.5 for better detection
+          minTrackingConfidence: 0.3       // Reduced from 0.5 for smoother tracking
         });
         setModelLoaded(true);
         setDebugStatus("Vision Ready");
