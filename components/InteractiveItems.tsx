@@ -48,28 +48,30 @@ const FRAME_PALETTE = [
   { color: '#8B4513' }, // Saddle Brown (Wood-like)
 ];
 
-// Curated Festive Images (Reliable URLs from Unsplash)
-const FESTIVE_IMAGES = [
-  "https://images.unsplash.com/photo-1512474932049-78ea796b6c42?auto=format&fit=crop&w=600&q=80", // Clear Snow Scene
-  "https://images.unsplash.com/photo-1576692131267-cf522760a218?auto=format&fit=crop&w=600&q=80", // Ornaments
-  "https://images.unsplash.com/photo-1543094209-4c126601b1e9?auto=format&fit=crop&w=600&q=80", // Elk in snow
-  "https://images.unsplash.com/photo-1513297887119-d46091b24bfa?auto=format&fit=crop&w=600&q=80", // Classic Balls
-  "https://images.unsplash.com/photo-1543589077-47d81606c1bf?auto=format&fit=crop&w=600&q=80", // Red Decoration
-  "https://images.unsplash.com/photo-1482638202333-c77d501dd2ec?auto=format&fit=crop&w=600&q=80", // Winter Forest
-  "https://images.unsplash.com/photo-1575373803274-a622a8459286?auto=format&fit=crop&w=600&q=80", // Bokeh Lights
-  "https://images.unsplash.com/photo-1511108690759-009324a90311?auto=format&fit=crop&w=600&q=80", // Tea/Cozy
-  "https://images.unsplash.com/photo-1544979590-2799616a614d?auto=format&fit=crop&w=600&q=80", // Indoor Tree
-  "https://images.unsplash.com/photo-1606819717115-9159c900370b?auto=format&fit=crop&w=600&q=80", // Gift Box
+// Festive Color Palette for Default Frames (No external dependencies)
+// Using elegant Christmas-themed gradients for beautiful placeholders
+const FESTIVE_COLORS = [
+  { primary: '#1a472a', secondary: '#2d5a3d', name: 'Forest Green' },     // Deep forest green
+  { primary: '#8B0000', secondary: '#DC143C', name: 'Crimson Red' },      // Rich red
+  { primary: '#B8860B', secondary: '#FFD700', name: 'Golden' },           // Festive gold
+  { primary: '#483D8B', secondary: '#6A5ACD', name: 'Royal Purple' },     // Royal purple
+  { primary: '#8B4513', secondary: '#D2691E', name: 'Warm Brown' },       // Warm brown
+  { primary: '#2F4F4F', secondary: '#5F9EA0', name: 'Pine Blue' },        // Pine blue
+  { primary: '#800020', secondary: '#C41E3A', name: 'Burgundy' },         // Burgundy
+  { primary: '#556B2F', secondary: '#6B8E23', name: 'Olive Green' },      // Olive green
+  { primary: '#191970', secondary: '#4169E1', name: 'Midnight Blue' },    // Midnight blue
+  { primary: '#8B008B', secondary: '#BA55D3', name: 'Festive Purple' },   // Festive purple
 ];
 
 // Subset of data that doesn't change (Identity)
 interface StaticItemData {
   id: string;
   type: 'gift' | 'frame';
-  imageUrl?: string;
+  imageUrl?: string;    // For user-uploaded photos
   giftContent?: string;
   scale: number;
-  color: string;       // Base color
+  color: string;        // Base color (for frames: primary gradient color)
+  secondaryColor?: string; // Secondary color for gradients
   stripeColor?: string; // Color for stripes
   ribbonColor?: string; // Color for ribbons (different from stripes)
   hasStripes: boolean;  // Whether to show stripes or keep it solid
@@ -108,6 +110,61 @@ const FallbackContent: React.FC<{ label?: string, color?: string }> = ({ label =
     </Text>
   </group>
 );
+
+// Gradient Placeholder for frames without user photos (Local, no network requests)
+const GradientPlaceholder: React.FC<{ primaryColor: string, secondaryColor: string }> = ({ primaryColor, secondaryColor }) => {
+  // Create a canvas texture with gradient
+  const texture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    
+    if (ctx) {
+      // Create elegant diagonal gradient
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      gradient.addColorStop(0, primaryColor);
+      gradient.addColorStop(1, secondaryColor);
+      
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Add subtle noise for texture depth
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const noise = (Math.random() - 0.5) * 8;
+        data[i] += noise;     // R
+        data[i + 1] += noise; // G
+        data[i + 2] += noise; // B
+      }
+      ctx.putImageData(imageData, 0, 0);
+    }
+    
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  }, [primaryColor, secondaryColor]);
+
+  useEffect(() => {
+    return () => {
+      texture.dispose();
+    };
+  }, [texture]);
+
+  return (
+    <mesh position={[0, 0, 0]}>
+      <planeGeometry args={[0.9, 1.3]} />
+      <meshStandardMaterial 
+        map={texture}
+        toneMapped={true}
+        roughness={0.7}
+        metalness={0.2}
+        side={THREE.DoubleSide}
+      />
+    </mesh>
+  );
+};
 
 // --- ROBUST IMAGE LOADER COMPONENT ---
 // Instead of relying on Suspense/useTexture which can be flaky with Blob URLs and list updates,
@@ -443,14 +500,19 @@ const Item: React.FC<{
           </mesh>
       </group>
       
-      {/* 3. The Image */}
+      {/* 3. The Image or Gradient Placeholder */}
       {/* Centered on the Mat. Increased Z to 0.03 to definitely avoid Z-fighting with Mat (0.01) */}
       <group position={[0, 0, 0.03]}>
-        {/* 
-           Using manual AsyncFrameImage to avoid Suspense issues with Blob URLs.
-           Key ensures clean unmount/mount on URL change.
-        */}
-        <AsyncFrameImage key={data.imageUrl} url={data.imageUrl!} />
+        {data.imageUrl ? (
+          /* User-uploaded photo */
+          <AsyncFrameImage key={data.imageUrl} url={data.imageUrl} />
+        ) : (
+          /* Elegant gradient placeholder (local, no network) */
+          <GradientPlaceholder 
+            primaryColor={data.secondaryColor || '#1a472a'} 
+            secondaryColor={data.stripeColor || '#2d5a3d'} 
+          />
+        )}
       </group>
       
       {/* 4. Glass Cover */}
@@ -501,26 +563,29 @@ export const InteractiveItems: React.FC<InteractiveItemsProps> = ({ appState, in
 
     // 15 Frames
     for (let i = 0; i < FRAMES_COUNT; i++) {
-      const theme = FRAME_PALETTE[i % FRAME_PALETTE.length];
+      const frameTheme = FRAME_PALETTE[i % FRAME_PALETTE.length];
+      const colorTheme = FESTIVE_COLORS[i % FESTIVE_COLORS.length];
       
-      let imgUrl;
-      
-      // LOGIC: If userPhotos exist, cycle through them. 
-      if (userPhotos && userPhotos.length > 0) {
-        imgUrl = userPhotos[i % userPhotos.length];
-      } else {
-        imgUrl = FESTIVE_IMAGES[i % FESTIVE_IMAGES.length];
-      }
-
-      list.push({
+      // LOGIC: If userPhotos exist, use them. Otherwise use gradient colors
+      const frameData: StaticItemData = {
         id: `frame-${i}`,
         type: 'frame',
         scale: 0.4, 
-        color: theme.color,
-        imageUrl: imgUrl,
+        color: frameTheme.color, // Frame border color
         phase: Math.random() * Math.PI * 2,
         hasStripes: false
-      });
+      };
+
+      if (userPhotos && userPhotos.length > 0) {
+        // User has uploaded photos - use them
+        frameData.imageUrl = userPhotos[i % userPhotos.length];
+      } else {
+        // No user photos - use gradient colors as placeholder
+        frameData.secondaryColor = colorTheme.primary;
+        frameData.stripeColor = colorTheme.secondary; // Reuse stripeColor for secondary gradient
+      }
+
+      list.push(frameData);
     }
     return list;
   }, [userPhotos, userGiftMessages]);
