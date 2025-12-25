@@ -153,16 +153,37 @@ const GradientPlaceholder: React.FC<{ primaryColor: string, secondaryColor: stri
   }, [texture]);
 
   return (
-    <mesh position={[0, 0, 0]}>
-      <planeGeometry args={[0.9, 1.3]} />
-      <meshStandardMaterial 
-        map={texture}
-        toneMapped={true}
-        roughness={0.7}
-        metalness={0.2}
-        side={THREE.DoubleSide}
-      />
-    </mesh>
+    <group>
+      {/* Gradient background */}
+      <mesh position={[0, 0, 0]}>
+        <planeGeometry args={[0.9, 1.3]} />
+        <meshStandardMaterial 
+          map={texture}
+          toneMapped={true}
+          roughness={0.7}
+          metalness={0.2}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      
+      {/* Helpful text overlay */}
+      <Text 
+        position={[0, 0, 0.05]} 
+        fontSize={0.08}
+        color="#FFFFFF"
+        maxWidth={0.8} 
+        textAlign="center"
+        anchorX="center"
+        anchorY="middle"
+        outlineWidth={0.01}
+        outlineColor="#000000"
+        fillOpacity={0.9}
+        material-toneMapped={false}
+        font="https://fonts.gstatic.com/s/raleway/v14/1Ptrg8zYS_SKggPNwK4vaqI.woff"
+      >
+        Tap on PICK A PHOTO{'\n'}to add your photo
+      </Text>
+    </group>
   );
 };
 
