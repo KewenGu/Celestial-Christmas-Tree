@@ -181,7 +181,7 @@ const GradientPlaceholder: React.FC<{ primaryColor: string, secondaryColor: stri
         material-toneMapped={false}
         font="https://fonts.gstatic.com/s/raleway/v14/1Ptrg8zYS_SKggPNwK4vaqI.woff"
       >
-        Tap on PICK A PHOTO{'\n'}to add your photo
+        Tap on{'\n'}PICK A PHOTO{'\n'}to add your photo
       </Text>
     </group>
   );
