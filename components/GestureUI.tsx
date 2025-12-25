@@ -19,13 +19,13 @@ interface GestureUIProps {
   onScreenshot?: () => void;
 }
 
-// Constants - Optimized for better responsiveness
-const GESTURE_CONFIDENCE_THRESHOLD = 3; // Reduced from 5 to 3 for faster response
+// Constants - Optimized for better gesture discrimination
+const GESTURE_CONFIDENCE_THRESHOLD = 4; // Increased from 3 for more stable recognition
 const MEDIAPIPE_WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
 const HAND_LANDMARKER_MODEL_URL = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
-const PINCH_DISTANCE_THRESHOLD = 0.10; // Increased from 0.08 for easier pinch detection
-const THUMB_EXTENDED_DISTANCE_THRESHOLD = 0.18; // Reduced from 0.2 for easier thumb detection
-const FINGER_EXTENSION_MULTIPLIER = 1.15; // Reduced from 1.2 for easier finger extension detection
+const PINCH_DISTANCE_THRESHOLD = 0.06; // Reduced from 0.10 - more strict pinch detection to avoid false positives
+const THUMB_EXTENDED_DISTANCE_THRESHOLD = 0.18;
+const FINGER_EXTENSION_MULTIPLIER = 1.15;
 
 // Default gifts to populate the list if empty (Syncs with InteractiveItems)
 const DEFAULT_GIFTS = [
@@ -223,11 +223,14 @@ export const GestureUI: React.FC<GestureUIProps> = ({
       const extendedCount = [thumbExtended, indexExtended, middleExtended, ringExtended, pinkyExtended].filter(Boolean).length;
       
       const pinchDistance = dist(4, 8);
-      const isPinching = pinchDistance < PINCH_DISTANCE_THRESHOLD;
+      // IMPORTANT: Pinch requires thumb+index close AND other fingers relatively extended
+      // This prevents mistaking a fist for a pinch
+      const isPinching = pinchDistance < PINCH_DISTANCE_THRESHOLD && extendedCount >= 2;
 
-      if (isPinching) detectedGesture = "PINCH";
+      // Priority order matters! Check fist BEFORE pinch to prevent misclassification
+      if (extendedCount <= 1) detectedGesture = "FIST"; // Fist has highest priority
+      else if (isPinching) detectedGesture = "PINCH"; // Pinch only if NOT a fist
       else if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) detectedGesture = "POINT";
-      else if (extendedCount <= 1) detectedGesture = "FIST";
       else if (extendedCount >= 4) detectedGesture = "OPEN";
       else detectedGesture = "NEUTRAL";
     }
